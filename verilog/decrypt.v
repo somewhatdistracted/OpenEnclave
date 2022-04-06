@@ -12,15 +12,22 @@ module decrypt
     input clk,
     input rst_n,
     
-    input [CIPHERTEXT_WIDTH-1:0] secret_key_prime,
-	input signed [CIPHERTEXT_WIDTH-1:0] cipher_text_top,
-	input signed [CIPHERTEXT_WIDTH-1:0] cipher_text_bot,
+    input [CIPHERTEXT_WIDTH-1:0] secret_key [DIMENSION:0],
+    input [CIPHERTEXT_WIDTH-1:0] cipher_text [DIMENSION:0],
     
-    output reg [PLAINTEXT_WIDTH-1:0] result,
+    output wire [PLAINTEXT_WIDTH-1:0] result,
 );
 
-  wire signed [2*CIPHERTEXT_WIDTH:0] dot_product;
-  assign dot_product = cipher_text_top + secret_key_prime * cipher_text_bot;
-  assign result = dot_product[PLAINTEXT_WIDTH-1:0];
+  wire signed [2*CIPHERTEXT_WIDTH:0] dot_product [DIMENSION:0];
+  
+  genvar n;
+  generate
+    assign dot_product[0] = secret_key[0] * cipher_text[0]
+	    for (int n = 1; n <= DIMENSION; n = n+1) begin dot_prod
+      assign dot_product[n] = dot_product[n] + secret_key[n] * cipher_text[n]
+    end
+  endgenerate
+		    
+  assign result = dot_product[DIMENSION][PLAINTEXT_WIDTH-1:0];
   
 endmodule
