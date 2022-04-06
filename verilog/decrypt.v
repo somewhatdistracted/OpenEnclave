@@ -5,17 +5,16 @@ module decrypt
   parameter DIMENSION = 1,
   parameter CIPHERTEXT_MODULUS = 1024,
   parameter CIPHERTEXT_WIDTH = 10,
-  parameter BIG_N = 30,
-  
+  parameter BIG_N = 30
 )
 (
     input clk,
     input rst_n,
     
     input [CIPHERTEXT_WIDTH-1:0] secret_key [DIMENSION:0],
-    input [CIPHERTEXT_WIDTH-1:0] cipher_text [DIMENSION:0],
+    input signed [CIPHERTEXT_WIDTH-1:0] cipher_text [DIMENSION:0],
     
-    output wire [PLAINTEXT_WIDTH-1:0] result,
+    output wire [PLAINTEXT_WIDTH-1:0] result
 );
 
   wire signed [2*CIPHERTEXT_WIDTH:0] dot_product [DIMENSION:0];
@@ -23,8 +22,8 @@ module decrypt
   genvar n;
   generate
     assign dot_product[0] = secret_key[0] * cipher_text[0];
-    for (int n = 1; n <= DIMENSION; n = n+1) begin dot_prod
-      assign dot_product[n] = dot_product[n] + secret_key[n] * cipher_text[n]
+    for (n = 1; n <= DIMENSION; n=n+1) begin: dot_prod
+      assign dot_product[n] = dot_product[n-1] + secret_key[n] * cipher_text[n];
     end
   endgenerate
 		    
