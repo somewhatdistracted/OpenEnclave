@@ -22,8 +22,8 @@ module decrypt
   
   genvar n;
   generate
-    assign dot_product[0] = secret_key[0] * cipher_text[0]
-	    for (int n = 1; n <= DIMENSION; n = n+1) begin dot_prod
+    assign dot_product[0] = secret_key[0] * cipher_text[0];
+    for (int n = 1; n <= DIMENSION; n = n+1) begin dot_prod
       assign dot_product[n] = dot_product[n] + secret_key[n] * cipher_text[n]
     end
   endgenerate
