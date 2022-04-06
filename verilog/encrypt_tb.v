@@ -12,7 +12,7 @@ module encrypt_tb;
 
     reg go;
     reg [`PLAINTEXT_WIDTH-1:0] plaintext;
-    reg [`CIPHERTEXT_WIDTH-1:0] publickey_row [BIG_N-1:0];
+    reg [`CIPHERTEXT_WIDTH-1:0] publickey_row [`BIG_N-1:0];
     reg [`BIG_N-1:0] noise_select;
     reg [`DIMENSION:0] row;
     reg [`CIPHERTEXT_WIDTH-1:0] ciphertext;
