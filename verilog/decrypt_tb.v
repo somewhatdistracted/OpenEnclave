@@ -12,9 +12,8 @@ module decrypt_tb
 
     reg clk;
     reg rst_n;
-    reg [CIPHERTEXT_WIDTH-1:0] secret_key_prime;
-    reg signed [CIPHERTEXT_WIDTH-1:0] cipher_text_top;
-    reg signed [CIPHERTEXT_WIDTH-1:0] cipher_text_bot;
+    reg [CIPHERTEXT_WIDTH-1:0] secret_key [DIMENSION:0];
+    reg signed [CIPHERTEXT_WIDTH-1:0] cipher_text [DIMENSION:0];
     reg [PLAINTEXT_WIDTH-1:0] result;
     reg [PLAINTEXT_WIDTH-1:0] expected;
 
@@ -30,21 +29,21 @@ module decrypt_tb
     ) decrypt_inst (
         .clk(clk),
         .rst_n(rst_n),
-        .secret_key_prime(secret_key_prime),
-        .cipher_text_top(cipher_text_top),
+        .secret_key(secret_key),
+        .cipher_text(cipher_text),
         .result(result),
     );
 
     initial begin
         rst_n = 1;
-        secret_key_prime = 0;
-        cipher_text_top = 0;
-        cipher_text_bot = 0;
+        secret_key_prime = [0, 0];
+        cipher_text_top = [0, 0];
     end
 
-    secret_key_prime = CIPHERTEXT_WIDTH'b0; // fill with value
-    cipher_text_top = CIPHERTEXT_WIDTH'b0; // fill
-    cipher_text_bot = CIPHERTEXT_WIDTH'b0;
+    secret_key[0] = CIPHERTEXT_WIDTH'b0; // fill with value
+    secret_key[1] = CIPHERTEXT_WIDTH'b0; // fill with value
+    cipher_text[0] = CIPHERTEXT_WIDTH'b0; // fill
+    cipher_text[1] = CIPHERTEXT_WIDTH'b0; // fill
 
     expected = 0;
     #10;
