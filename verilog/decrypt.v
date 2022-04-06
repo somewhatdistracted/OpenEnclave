@@ -1,25 +1,26 @@
 module decrypt
 #(
+  parameter PLAINTEXT_MODULUS = 64,
+  parameter PLAINTEXT_WIDTH = 6,
   parameter DIMENSION = 1,
-  parameter MODULUS = 1024,
-  parameter N = 30,
-  parameter PLAINTEXT = 64,
-  parameter P = 6,
+  parameter CIPHERTEXT_MODULUS = 1024,
+  parameter CIPHERTEXT_WIDTH = 10,
+  parameter BIG_N = 30,
   
 )
 (
     input clk,
     input rst_n,
     
-    input [N - 1 : 0] secret_key_prime,
-	input signed [N - 1 : 0] cipher_text_top,
-	input signed [N - 1 : 0] cipher_text_bot,
+    input [CIPHERTEXT_WIDTH-1:0] secret_key_prime,
+	input signed [CIPHERTEXT_WIDTH-1:0] cipher_text_top,
+	input signed [CIPHERTEXT_WIDTH-1:0] cipher_text_bot,
     
-    output reg [P - 1 : 0] result,
+    output reg [PLAINTEXT_WIDTH-1:0] result,
 );
 
-  wire signed [N : 0] dot_product;
+  wire signed [2*CIPHERTEXT_WIDTH:0] dot_product;
   assign dot_product = cipher_text_top + secret_key_prime * cipher_text_bot;
-  assign result = dot_product[P - 1 : 0];
+  assign result = dot_product[PLAINTEXT_WIDTH-1:0];
   
 endmodule
