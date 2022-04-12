@@ -2,31 +2,31 @@ module decrypt
 #(
   parameter PLAINTEXT_MODULUS = 64,
   parameter PLAINTEXT_WIDTH = 6,
-  parameter DIMENSION = 1,
   parameter CIPHERTEXT_MODULUS = 1024,
   parameter CIPHERTEXT_WIDTH = 10,
+  parameter DIMENSION = 10,
   parameter BIG_N = 30
 )
 (
     input clk,
     input rst_n,
     
-    input [CIPHERTEXT_WIDTH-1:0] secret_key [DIMENSION:0],
-    input signed [CIPHERTEXT_WIDTH-1:0] cipher_text [DIMENSION:0],
-    
-    output wire [PLAINTEXT_WIDTH-1:0] result
+    input [CIPHERTEXT_WIDTH-1:0] secretkey_entry,
+    input signed [CIPHERTEXT_WIDTH-1:0] ciphertext_entry,
+    input [DIMENSION:0] row,
+
+    output wire [PLAINTEXT_WIDTH-1:0] result,
 );
 
-  wire signed [2*CIPHERTEXT_WIDTH:0] dot_product [DIMENSION:0];
-  
-  genvar n;
-  generate
-    assign dot_product[0] = secret_key[0] * cipher_text[0];
-    for (n = 1; n <= DIMENSION; n=n+1) begin: dot_prod
-      assign dot_product[n] = dot_product[n-1] + secret_key[n] * cipher_text[n];
+  reg signed [2*CIPHERTEXT_WIDTH:0] dot_product;
+
+  always @(posedge clk) begin
+    dot_product <= dot_product + secretkey_entry * ciphertext_entry;
+    if (row == 0) begin
+        dot_product;
     end
-  endgenerate
+  end
 		    
-  assign result = dot_product[DIMENSION][PLAINTEXT_WIDTH-1:0];
+  assign result = dot_product[PLAINTEXT_WIDTH-1:0];
   
 endmodule
