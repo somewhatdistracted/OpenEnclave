@@ -16,6 +16,7 @@ module encrypt_tb;
     reg [`BIG_N-1:0] noise_select;
     reg [`DIMENSION:0] row;
     reg [`CIPHERTEXT_WIDTH-1:0] ciphertext;
+    reg [`CIPHERTEXT_WIDTH-1:0] expected;
 
     always #10 clk = ~clk;
 
@@ -29,7 +30,6 @@ module encrypt_tb;
     ) encrypt_inst (
         .clk(clk),
         .rst_n(rst_n),
-        .go(go),
         .plaintext(plaintext),
         .publickey_row(publickey_row),
         .noise_select(noise_select),
@@ -48,6 +48,7 @@ module encrypt_tb;
 
     	plaintext = `PLAINTEXT_WIDTH'b101;
     	noise_select = `BIG_N'b100110001101010110000011000010; // fill
+	expected = 752224;
 
         publickey_row[0] = `CIPHERTEXT_WIDTH'd124312;
         publickey_row[1] = `CIPHERTEXT_WIDTH'd58876;
@@ -82,7 +83,7 @@ module encrypt_tb;
 
     	#10;
 
-    	$display("Result = %d", ciphertext);
+    	$display("Result = %d", ciphertext); assert(ciphertext == expected);
 
         $finish;
     end
