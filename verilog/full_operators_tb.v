@@ -70,14 +70,14 @@ module homomorphic_multiply_tb;
     	#10;
 
     	plaintext = `PLAINTEXT_WIDTH'd2;
-    	noise_select = `BIG_N'b11010; // fill
-	expected = 24;
+    	noise_select = `BIG_N'b10111; // fill
+	expected = 26;
 
-        publickey_row[0] = `CIPHERTEXT_WIDTH'd7;
-        publickey_row[1] = `CIPHERTEXT_WIDTH'd57;
-        publickey_row[2] = `CIPHERTEXT_WIDTH'd58;
-        publickey_row[3] = `CIPHERTEXT_WIDTH'd22;
-        publickey_row[4] = `CIPHERTEXT_WIDTH'd44;
+        publickey_row[0] = `CIPHERTEXT_WIDTH'd56;
+        publickey_row[1] = `CIPHERTEXT_WIDTH'd8;
+        publickey_row[2] = `CIPHERTEXT_WIDTH'd24;
+        publickey_row[3] = `CIPHERTEXT_WIDTH'd16;
+        publickey_row[4] = `CIPHERTEXT_WIDTH'd56;
 
         #10
         ciphertext1[0] = ciphertext;
@@ -85,7 +85,7 @@ module homomorphic_multiply_tb;
         
         #10
         plaintext = `PLAINTEXT_WIDTH'd3;
-        noise_select = `BIG_N'b11000; // fill
+        noise_select = `BIG_N'b00000; // fill
         expected = 3;
 
         #10
@@ -93,13 +93,13 @@ module homomorphic_multiply_tb;
         $display("Result = %d", ciphertext); assert(ciphertext == expected);
 
         #10
-        expected = 32;
+        expected = 0;
 
-        publickey_row[0] = `CIPHERTEXT_WIDTH'd59;
-        publickey_row[1] = `CIPHERTEXT_WIDTH'd37;
-        publickey_row[2] = `CIPHERTEXT_WIDTH'd42;
-        publickey_row[3] = `CIPHERTEXT_WIDTH'd46;
-        publickey_row[4] = `CIPHERTEXT_WIDTH'd44;
+        publickey_row[0] = `CIPHERTEXT_WIDTH'd1;
+        publickey_row[1] = `CIPHERTEXT_WIDTH'd48;
+        publickey_row[2] = `CIPHERTEXT_WIDTH'd45;
+        publickey_row[3] = `CIPHERTEXT_WIDTH'd48;
+        publickey_row[4] = `CIPHERTEXT_WIDTH'd54;
 
         #10
         ciphertext2[1] = ciphertext;
@@ -107,8 +107,8 @@ module homomorphic_multiply_tb;
 
         #10
         plaintext = `PLAINTEXT_WIDTH'd2;
-        noise_select = `BIG_N'b11010; // fill
-        expected = 14;
+        noise_select = `BIG_N'b10111; // fill
+        expected = 20;
 
         #10
         ciphertext1[1] = ciphertext;
@@ -140,12 +140,12 @@ module homomorphic_multiply_tb;
         ciphertext_select = 1;
         ciphertext_entry = ciphertext2[0];
         #20;
-    	$display("Result = %d", result); assert(result == 8);
+    	$display("Result = %d", result); assert(result == 14);
 
         row = 1;
         ciphertext_entry = ciphertext2[1];
         #20;
-    	$display("Result = %d", result); assert(result == 42);
+    	$display("Result = %d", result); assert(result == 60);
 
         // read out rest of results
         ciphertext_select = 0;
