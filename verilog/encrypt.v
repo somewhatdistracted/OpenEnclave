@@ -5,7 +5,7 @@ module encrypt
     parameter CIPHERTEXT_MODULUS = 1024,
     parameter CIPHERTEXT_WIDTH = 10,
     parameter DIMENSION = 10,
-    parameter BIG_N = 30,
+    parameter BIG_N = 30
 )
 (
     input clk,
@@ -20,12 +20,12 @@ module encrypt
     output wire [CIPHERTEXT_WIDTH-1:0] ciphertext
 );
     wire [CIPHERTEXT_WIDTH-1:0] psum [BIG_N-1:0];
+    genvar i;
     generate
-        genvar i;
-        assign psum[0] = ((row == 1)? plaintext : 0) + (noise_select[0]? publickey_row[i] : 0);
-        for (i = 1; i < BIG_N; i=i+1) begin: i_loop
-            psum[i] = psum[i-1] + (noise_select[i]? publickey_row[i] : 0);
+        assign psum[0] = ((row == 1)? plaintext : 0) + (noise_select[0]? publickey_row[0] : 0);
+        for (i = 1; i < BIG_N; i=i+1) begin
+            assign psum[i] = psum[i-1] + (noise_select[i]? publickey_row[i] : 0);
         end
     endgenerate
-    assign ciphertext = psum[p];
+    assign ciphertext = psum[BIG_N-1];
 endmodule
