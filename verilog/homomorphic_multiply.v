@@ -1,4 +1,3 @@
-
 module homomorphic_multiply
 #(
   parameter PLAINTEXT_MODULUS = 64,
@@ -12,54 +11,48 @@ module homomorphic_multiply
     input clk,
     input rst_n,
     
-    input signed [CIPHERTEXT_WIDTH-1:0] ciphertext1_entry,
-    input signed [CIPHERTEXT_WIDTH-1:0] ciphertext2_entry,
-    input [DIMENSION:0] one_row,
-    input [DIMENSION:0] two_row,
-    input one_en,
-    input two_en,
+    input signed [CIPHERTEXT_WIDTH-1:0] ciphertext_entry,
+    input [DIMENSION:0] row,
+    input ciphertext_select,
+    input en,
     
-    output wire [CIPHERTEXT_WIDTH-1:0] result_partial,
-    output wire [DIMENSION:0] result_row,
-    output result_en
+    output wire [CIPHERTEXT_WIDTH-1:0] result_partial
 );
   
-  reg [CIPHERTEXT_WIDTH-1:0] ciphertext1 [DIMENSION:0];
-  reg [CIPHERTEXT_WIDTH-1:0] interim_result [2*DIMENSION-2:0] = 0;
-  reg one_ready;
-  reg [DIMENSION:0] row_calc;
-  reg [DIMENSION:0] out_row;
-  reg out_en;
+    reg [CIPHERTEXT_WIDTH-1:0] ciphertext1 [DIMENSION:0];
+    reg [CIPHERTEXT_WIDTH-1:0] interim_result [2*DIMENSION:0];
 
-  always @(posedge clk) begin
-    one_ready = 0;
-    row_calc = 0;
-    out_row = 0;
-    out_en = 0;
+    integer i;
+    always @(posedge clk) begin
 
-    if(one_en == 1) begin
-      ciphertext1[one_row] = ciphertext1_entry;
-      one_ready = 1'b0;
-      if(one_row == DIMENSION) begin
-        one_ready = 1'b1
-      end
+        if (ciphertext_select == 0 && en) begin
+            // filling first ciphertext
+            if (row <= DIMENSION) begin
+                ciphertext1[row] = ciphertext_entry;
+            end else begin
+                ciphertext1[row - DIMENSION] = ciphertext_entry;
+            end
+        end
+
+        if (ciphertext_select == 1 && en) begin
+            // second ciphertext
+            for (i = 0; i <= DIMENSION; i=i+1) begin
+                interim_result[row + i] = interim_result[row + i] + ciphertext_entry * ciphertext1[i];
+            end
+        end
+
+        if (rst_n == 0) begin
+            //ciphertext1 = '{default:(CIPHERTEXT_WIDTH-1)'b0};
+            //interim_result = '{default:(CIPHERTEXT_WIDTH)'b0};
+            for (i = 0; i <= DIMENSION; i=i+1) begin
+                ciphertext1[i] = 0;
+                interim_result[i] = 0;
+                interim_result[i+DIMENSION] = 0;
+            end
+        end
+
     end
 
-    if(two_en == 1) begin
-      row_calc = two_row;
-      coef_calc = ciphertext2_entry;
-
-      assign result_partial = interim_result[row_calc];
-      assign result_row = two_row;
-      assign out_en = 1;
-    end
-  end
-
-  genvar n;
-  generate
-    for (int n = 0; n <= DIMENSION; n = n+1) begin tensor_prod
-      interim_result[row_calc+n] = interim_result[row_calc+n] + coef_calc * ciphertext1[n]; 
-    end
-  endgenerate
+    assign result_partial = interim_result[row];
 
 endmodule
