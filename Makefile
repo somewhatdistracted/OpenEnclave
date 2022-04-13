@@ -5,7 +5,7 @@ run: compile
 	./simv
 
 compile: 
-	vcs -full64 -sverilog -timescale=1ns/1ps -debug_access+pp verilog/$(target)_tb.v verilog/encrypt.v verilog/decrypt.v verilog/homomorphic_add.v
+	vcs -full64 -sverilog -timescale=1ns/1ps -debug_access+pp verilog/$(target)_tb.v verilog/encrypt.v verilog/decrypt.v verilog/homomorphic_add.v verilog/homomorphic_multiply.v
 	
 clean:
 	rm -rf ./simv

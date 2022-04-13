@@ -23,9 +23,9 @@ module encrypt_tb;
     encrypt #(
         .PLAINTEXT_MODULUS(`PLAINTEXT_MODULUS),
         .PLAINTEXT_WIDTH(`PLAINTEXT_WIDTH),
-        .DIMENSION(`DIMENSION),
         .CIPHERTEXT_MODULUS(`CIPHERTEXT_MODULUS),
         .CIPHERTEXT_WIDTH(`CIPHERTEXT_WIDTH),
+        .DIMENSION(`DIMENSION),
         .BIG_N(`BIG_N)
     ) encrypt_inst (
         .clk(clk),
