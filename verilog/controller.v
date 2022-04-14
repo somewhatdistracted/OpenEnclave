@@ -27,41 +27,67 @@ module controller
     output reg [ADDR_WIDTH-1:0] op2_addr,
     output reg op_select,
     output reg en,
+    output reg done,
     output reg [DIM_WIDTH-1:0] row
 );
+
+    reg [ADDR_WIDTH-1:0] op1_base_addr_stored;
+    reg [ADDR_WIDTH-1:0] op2_base_addr_stored;
 
     always @(posedge clk) begin
 
         // lowest priority: evolve state
-        case (opcode_out)
-            OPCODE_ENCRYPT: begin
-                
-            end
-            OPCODE_DECRYPT: begin
+        if (en) begin
+            case (opcode_out)
+                OPCODE_ENCRYPT: begin
+                    
+                end
+                OPCODE_DECRYPT: begin
+                    if (op1_addr <= op1_base_addr_stored + DIMENSION) begin
+                        op1_addr = op1_addr + 1;
+                        op2_addr = op2_addr + 1;
+                        row = row + 1;
+                    end else begin
+                        en = 0;
+                        done = 1;
+                    end
+                end
+                OPCODE_ADD: begin
+                    if (op1_addr <= op1_base_addr_stored + DIMENSION) begin
+                        op1_addr = op1_addr + 1;
+                        op2_addr = op2_addr + 1;
+                    end else begin
+                        en = 0;
+                        done = 1;
+                    end
+                end
+                OPCODE_MULT: begin
+                    // cycle through op1 addrs
+                    // cycle through op2 addrs
+                    // push rows through
+                end
+                default: begin
 
-            end
-            OPCODE_ADD: begin
+                end
+            endcase
+        end
 
-            end
-            OPCODE_MULT: begin
-
-            end
-            default: begin
-
-            end
-        endcase
+        if (!en && !done) begin
+            en = 1;
+        end
 
         // second highest priority: configure
-        if (config_en == 1) begin
+        if (config_en) begin
             opcode_out = opcode;
             op1_addr = op1_base_addr;
             op2_addr = op2_base_addr;
             en = 0;
+            done = 0;
             row = 0;
         end
 
         // highest priority: reset
-        if (rst_n == 0) begin
+        if (!rst_n) begin
             opcode_out = 0;
             op1_addr = 0;
             op2_addr = 0;
