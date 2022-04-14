@@ -1,3 +1,7 @@
 [submodule "mflowgen"]
 	path = mflowgen
 	url = https://github.com/mflowgen/mflowgen
+[submodule "skywater-digital-flow"]
+	path = skywater-digital-flow
+	url = https://code.stanford.edu/ee272/skywater-digital-flow.git
+    branch = 372
