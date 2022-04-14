@@ -21,9 +21,9 @@ module decrypt
     reg signed [2*CIPHERTEXT_WIDTH:0] dot_product;
 
     always @(posedge clk) begin
-        dot_product <= dot_product + secretkey_entry * ciphertext_entry;
-        if (row == 0) begin
-            dot_product <= 0;
+        dot_product = dot_product + secretkey_entry * ciphertext_entry;
+        if (row == 0 || !rst_n) begin
+            dot_product = 0;
         end
     end
 		    
