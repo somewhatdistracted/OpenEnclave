@@ -54,3 +54,4 @@ dkms.conf
 .DS_Store
 .ipynb_checkpoints
 *.swp
+venv/
