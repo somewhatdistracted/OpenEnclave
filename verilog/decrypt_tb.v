@@ -37,7 +37,11 @@ module decrypt_tb;
 
     initial begin
 	clk = 0;
+        rst_n = 0;
+
+        #200;
         rst_n = 1;
+        #200;
 
     	secret_key[0] = `CIPHERTEXT_WIDTH'd1; // fill with value
     	secret_key[1] = `CIPHERTEXT_WIDTH'd173; // fill with value
@@ -54,12 +58,11 @@ module decrypt_tb;
 	ctentry = cipher_text[1];
 	#20;
 
-	expected = 38;
+	expected = 37;
 	$display("Result = %d", result); assert(result == expected);
 
 	#20;
 	$finish;
     end
-
 
 endmodule

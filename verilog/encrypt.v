@@ -22,9 +22,9 @@ module encrypt
     wire [CIPHERTEXT_WIDTH-1:0] psum [BIG_N-1:0];
     genvar i;
     generate
-        assign psum[0] = ((row == 1)? plaintext : 0) + (noise_select[0]? publickey_row[0] : 0);
+        assign psum[0] = ((row == 0)? plaintext : 0) + (noise_select[0] ? publickey_row[0] : 0);
         for (i = 1; i < BIG_N; i=i+1) begin
-            assign psum[i] = psum[i-1] + (noise_select[i]? publickey_row[i] : 0);
+            assign psum[i] = psum[i-1] + (noise_select[i] ? publickey_row[i] : 0);
         end
     endgenerate
     assign ciphertext = psum[BIG_N-1];
