@@ -22,7 +22,10 @@ module decrypt
 
     always @(posedge clk) begin
         dot_product = dot_product + secretkey_entry * ciphertext_entry;
-        if (row == 0 || !rst_n) begin
+        if(row == 0) begin
+            dot_product = secretkey_entry * ciphertext_entry;
+        end
+        if(!rst_n) begin
             dot_product = 0;
         end
     end
