@@ -2,7 +2,7 @@
 `define PLAINTEXT_WIDTH 6
 `define DIMENSION 1
 `define CIPHERTEXT_MODULUS 1024
-`define CIPHERTEXT_WIDTH 21 
+`define CIPHERTEXT_WIDTH 10 
 `define BIG_N 30 
 
 module decrypt_tb;
@@ -61,7 +61,68 @@ module decrypt_tb;
 	expected = 37;
 	$display("Result = %d", result); assert(result == expected);
 
-	#20;
+	#200;
+        rst_n = 1;
+        #200;
+
+        secret_key[0] = `CIPHERTEXT_WIDTH'd1; // fill with value
+        secret_key[1] = `CIPHERTEXT_WIDTH'd157; // fill with value
+        cipher_text[0] = `CIPHERTEXT_WIDTH'd600; // fill
+        cipher_text[1] = `CIPHERTEXT_WIDTH'd882; // fill
+
+        row = 0;
+        skentry = secret_key[0];
+        ctentry = cipher_text[0];
+        #20;
+
+        row = 1;
+        skentry = secret_key[1];
+        ctentry = cipher_text[1];
+        #20;
+
+        expected = 2;
+        $display("Result = %d", result); assert(result == expected);
+
+        #200;
+        rst_n = 1;
+        #200;
+
+        cipher_text[0] = `CIPHERTEXT_WIDTH'd431; // fill
+        cipher_text[1] = `CIPHERTEXT_WIDTH'd826; // fill
+
+        row = 0;
+        skentry = secret_key[0];
+        ctentry = cipher_text[0];
+        #20;
+
+        row = 1;
+        skentry = secret_key[1];
+        ctentry = cipher_text[1];
+        #20;
+
+        expected = 1;
+        $display("Result = %d", result); assert(result == expected);
+
+        #200;
+        rst_n = 1;
+        #200;
+
+        cipher_text[0] = `CIPHERTEXT_WIDTH'd7; // fill
+        cipher_text[1] = `CIPHERTEXT_WIDTH'd684; // fill
+
+        row = 0;
+        skentry = secret_key[0];
+        ctentry = cipher_text[0];
+        #20;
+
+        row = 1;
+        skentry = secret_key[1];
+        ctentry = cipher_text[1];
+        #20;
+
+        expected = 3;
+        $display("Result = %d", result); assert(result == expected);
+
 	$finish;
     end
 

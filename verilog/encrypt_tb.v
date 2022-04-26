@@ -2,7 +2,7 @@
 `define PLAINTEXT_WIDTH 6
 `define DIMENSION 1
 `define CIPHERTEXT_MODULUS 1024
-`define CIPHERTEXT_WIDTH 21
+`define CIPHERTEXT_WIDTH 10
 `define BIG_N 30
 
 module encrypt_tb;
@@ -44,47 +44,105 @@ module encrypt_tb;
         plaintext = 0;
         noise_select = 0;
 
-    	#10;
+    	#20;
 
-    	plaintext = `PLAINTEXT_WIDTH'b101;
-    	noise_select = `BIG_N'b100110001101010110000011000010; // fill
-	expected = 752224;
+        row = 0;        
+        plaintext = `PLAINTEXT_WIDTH'd2;
+        noise_select = `BIG_N'b101010001110110011100110111001;// fill
+        expected = 600;
 
-        publickey_row[0] = `CIPHERTEXT_WIDTH'd124312;
-        publickey_row[1] = `CIPHERTEXT_WIDTH'd58876;
-        publickey_row[2] = `CIPHERTEXT_WIDTH'd59532;
-        publickey_row[3] = `CIPHERTEXT_WIDTH'd3836;
-        publickey_row[4] = `CIPHERTEXT_WIDTH'd94956;
-        publickey_row[5] = `CIPHERTEXT_WIDTH'd161376;
-        publickey_row[6] = `CIPHERTEXT_WIDTH'd20564;
-        publickey_row[7] = `CIPHERTEXT_WIDTH'd92888;
-        publickey_row[8] = `CIPHERTEXT_WIDTH'd126280;
-        publickey_row[9] = `CIPHERTEXT_WIDTH'd72980;
-        publickey_row[10] = `CIPHERTEXT_WIDTH'd101908;
-        publickey_row[11] = `CIPHERTEXT_WIDTH'd656;
-        publickey_row[12] = `CIPHERTEXT_WIDTH'd127920;
-        publickey_row[13] = `CIPHERTEXT_WIDTH'd76980;
-        publickey_row[14] = `CIPHERTEXT_WIDTH'd75340;
-        publickey_row[15] = `CIPHERTEXT_WIDTH'd105124;
-        publickey_row[16] = `CIPHERTEXT_WIDTH'd141104;
-        publickey_row[17] = `CIPHERTEXT_WIDTH'd23352;
-        publickey_row[18] = `CIPHERTEXT_WIDTH'd3772;
-        publickey_row[19] = `CIPHERTEXT_WIDTH'd41656;
-        publickey_row[20] = `CIPHERTEXT_WIDTH'd28700;
-        publickey_row[21] = `CIPHERTEXT_WIDTH'd123820;
-        publickey_row[22] = `CIPHERTEXT_WIDTH'd44344;
-        publickey_row[23] = `CIPHERTEXT_WIDTH'd7052;
-        publickey_row[24] = `CIPHERTEXT_WIDTH'd148976;
-        publickey_row[25] = `CIPHERTEXT_WIDTH'd57300;
-        publickey_row[26] = `CIPHERTEXT_WIDTH'd17448;
-        publickey_row[27] = `CIPHERTEXT_WIDTH'd118900;
-        publickey_row[28] = `CIPHERTEXT_WIDTH'd64352;
-        publickey_row[29] = `CIPHERTEXT_WIDTH'd55432;
+        publickey_row[0] = `CIPHERTEXT_WIDTH'd320;
+        publickey_row[1] = `CIPHERTEXT_WIDTH'd909;
+        publickey_row[2] = `CIPHERTEXT_WIDTH'd721;
+        publickey_row[3] = `CIPHERTEXT_WIDTH'd278;
+        publickey_row[4] = `CIPHERTEXT_WIDTH'd946;
+        publickey_row[5] = `CIPHERTEXT_WIDTH'd806;
+        publickey_row[6] = `CIPHERTEXT_WIDTH'd193;
+        publickey_row[7] = `CIPHERTEXT_WIDTH'd593;
+        publickey_row[8] = `CIPHERTEXT_WIDTH'd121;
+        publickey_row[9] = `CIPHERTEXT_WIDTH'd418;
+        publickey_row[10] = `CIPHERTEXT_WIDTH'd739;
+        publickey_row[11] = `CIPHERTEXT_WIDTH'd642;
+        publickey_row[12] = `CIPHERTEXT_WIDTH'd648;
+        publickey_row[13] = `CIPHERTEXT_WIDTH'd873;
+        publickey_row[14] = `CIPHERTEXT_WIDTH'd279;
+        publickey_row[15] = `CIPHERTEXT_WIDTH'd1023;
+        publickey_row[16] = `CIPHERTEXT_WIDTH'd643;
+        publickey_row[17] = `CIPHERTEXT_WIDTH'd129;
+        publickey_row[18] = `CIPHERTEXT_WIDTH'd666;
+        publickey_row[19] = `CIPHERTEXT_WIDTH'd962;
+        publickey_row[20] = `CIPHERTEXT_WIDTH'd869;
+        publickey_row[21] = `CIPHERTEXT_WIDTH'd165;
+        publickey_row[22] = `CIPHERTEXT_WIDTH'd698;
+        publickey_row[23] = `CIPHERTEXT_WIDTH'd821;
+        publickey_row[24] = `CIPHERTEXT_WIDTH'd744;
+        publickey_row[25] = `CIPHERTEXT_WIDTH'd837;
+        publickey_row[26] = `CIPHERTEXT_WIDTH'd466;
+        publickey_row[27] = `CIPHERTEXT_WIDTH'd394;
+        publickey_row[28] = `CIPHERTEXT_WIDTH'd192;
+        publickey_row[29] = `CIPHERTEXT_WIDTH'd588;
 
-    	#10;
+        #20
+        $display("Result = %d", ciphertext); assert(ciphertext == expected);
+        #20
 
-    	$display("Result = %d", ciphertext); assert(ciphertext == expected);
+        plaintext = `PLAINTEXT_WIDTH'd1;
+        noise_select = `BIG_N'b100101000110100011011001101010;// fill
+        expected = 431;
 
+        #20
+        $display("Result = %d", ciphertext); assert(ciphertext == expected);
+        
+        #20;
+
+        row = 1;
+        plaintext = `PLAINTEXT_WIDTH'd2;
+        noise_select = `BIG_N'b101010001110110011100110111001;// fill
+        expected = 882;
+
+        publickey_row[0] = `CIPHERTEXT_WIDTH'd576;
+        publickey_row[1] = `CIPHERTEXT_WIDTH'd847;
+        publickey_row[2] = `CIPHERTEXT_WIDTH'd763;
+        publickey_row[3] = `CIPHERTEXT_WIDTH'd626;
+        publickey_row[4] = `CIPHERTEXT_WIDTH'd294;
+        publickey_row[5] = `CIPHERTEXT_WIDTH'd34;
+        publickey_row[6] = `CIPHERTEXT_WIDTH'd651;
+        publickey_row[7] = `CIPHERTEXT_WIDTH'd187;
+        publickey_row[8] = `CIPHERTEXT_WIDTH'd819;
+        publickey_row[9] = `CIPHERTEXT_WIDTH'd246;
+        publickey_row[10] = `CIPHERTEXT_WIDTH'd321;
+        publickey_row[11] = `CIPHERTEXT_WIDTH'd854;
+        publickey_row[12] = `CIPHERTEXT_WIDTH'd24;
+        publickey_row[13] = `CIPHERTEXT_WIDTH'd67;
+        publickey_row[14] = `CIPHERTEXT_WIDTH'd701;
+        publickey_row[15] = `CIPHERTEXT_WIDTH'd117;
+        publickey_row[16] = `CIPHERTEXT_WIDTH'd865;
+        publickey_row[17] = `CIPHERTEXT_WIDTH'd331;
+        publickey_row[18] = `CIPHERTEXT_WIDTH'd350;
+        publickey_row[19] = `CIPHERTEXT_WIDTH'd150;
+        publickey_row[20] = `CIPHERTEXT_WIDTH'd407;
+        publickey_row[21] = `CIPHERTEXT_WIDTH'd407;
+        publickey_row[22] = `CIPHERTEXT_WIDTH'd318;
+        publickey_row[23] = `CIPHERTEXT_WIDTH'd135;
+        publickey_row[24] = `CIPHERTEXT_WIDTH'd760;
+        publickey_row[25] = `CIPHERTEXT_WIDTH'd567;
+        publickey_row[26] = `CIPHERTEXT_WIDTH'd70;
+        publickey_row[27] = `CIPHERTEXT_WIDTH'd430;
+        publickey_row[28] = `CIPHERTEXT_WIDTH'd320;
+        publickey_row[29] = `CIPHERTEXT_WIDTH'd388;
+
+        #20
+        $display("Result = %d", ciphertext); assert(ciphertext == expected);
+        #20
+
+        plaintext = `PLAINTEXT_WIDTH'd1;
+        noise_select = `BIG_N'b100101000110100011011001101010;// fill
+        expected = 826;
+
+        #20
+        $display("Result = %d", ciphertext); assert(ciphertext == expected);
+
+        
         $finish;
     end
 endmodule
