@@ -36,7 +36,7 @@ module decrypt_tb;
     );
 
     initial begin
-
+clk = 0;
 secret_key[0] = `CIPHERTEXT_WIDTH'd1;
 secret_key[1] = `CIPHERTEXT_WIDTH'd2914804;
 secret_key[2] = `CIPHERTEXT_WIDTH'd7111320;
