@@ -2,7 +2,7 @@
 `define PLAINTEXT_WIDTH 6
 `define DIMENSION 1
 `define CIPHERTEXT_MODULUS 1024
-`define CIPHERTEXT_WIDTH 21 
+`define CIPHERTEXT_WIDTH 10 
 `define BIG_N 30 
 
 module homomorphic_add_tb;
@@ -11,8 +11,8 @@ module homomorphic_add_tb;
     reg rst_n;
     reg signed [`CIPHERTEXT_WIDTH-1:0] ciphertext1;
     reg signed [`CIPHERTEXT_WIDTH-1:0] ciphertext2;
-    wire signed [`CIPHERTEXT_WIDTH-1:0] result;
-    reg signed [`CIPHERTEXT_WIDTH-1:0] expected;
+    wire [`CIPHERTEXT_WIDTH-1:0] result;
+    reg  [`CIPHERTEXT_WIDTH-1:0] expected;
 
     always #10 clk = ~clk;
 
@@ -34,13 +34,30 @@ module homomorphic_add_tb;
     initial begin
         rst_n = 1;
 
-    	ciphertext1 = `CIPHERTEXT_WIDTH'd102; // fill
-    	ciphertext2 = `CIPHERTEXT_WIDTH'd356; // fill
+        ciphertext1 = `CIPHERTEXT_WIDTH'd102; // fill
+        ciphertext2 = `CIPHERTEXT_WIDTH'd356; // fill
 
-    	expected = 458;
-    	#20;
+        expected = 458;
+        #20;
 
-    	$display("Result = %d", result); assert(result == expected);
+        $display("Result = %d", result); assert(result == expected);
+
+        ciphertext1 = `CIPHERTEXT_WIDTH'd600; // fill
+        ciphertext2 = `CIPHERTEXT_WIDTH'd431; // fill
+
+        expected = 7;
+        #20;
+
+        $display("Result = %d", result); assert(result == expected);
+
+        ciphertext1 = `CIPHERTEXT_WIDTH'd882; // fill
+        ciphertext2 = `CIPHERTEXT_WIDTH'd826; // fill
+
+        expected = 684;
+        #20;
+
+        $display("Result = %d", result); assert(result == expected);
+
         $finish;
     end
 
