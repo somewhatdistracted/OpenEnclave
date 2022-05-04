@@ -16,7 +16,7 @@ module sram
 
     genvar x, y;
     generate
-        wire [DATA_WIDTH - 1 : 0] rdata_w [DEPTH/1024 - 1 : 0]; 
+        wire [DATA_WIDTH - 1 : 0] rdata_w [DEPTH/256 - 1 : 0]; 
         reg  [ADDR_WIDTH - 1 : 0] radr_r;
 
         always @ (posedge clk) begin
