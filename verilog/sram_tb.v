@@ -42,16 +42,15 @@ module sram_tb;
     #20
 
     wen = 0;
-    assert(rdata == 0);
     #20
 
     radr = `ADDR_WIDTH'd97;
     ren = 1;
     #20
-    
-    ren = 0;
+
+    $display("Result = %d", rdata);
     assert(rdata == 137);   
-    
+    ren = 0;   
     #20
 
     wdata = `DATA_WIDTH'd84;
@@ -60,14 +59,13 @@ module sram_tb;
     #20
 
     wen = 0;
-    assert(rdata == 137);
     #20
 
     radr = `ADDR_WIDTH'd83;
     ren = 1;
     #20
     
-    ren = 0;
+    $display("Result = %d", rdata);
     assert(rdata == 84);    
     
     #20
@@ -78,6 +76,7 @@ module sram_tb;
     #20
 
     wen = 0;
+    $display("Result = %d", rdata);
     assert(rdata == 84);
     #20
 
@@ -86,6 +85,7 @@ module sram_tb;
     #20
     
     ren = 0;
+    $display("Result = %d", rdata);
     assert(rdata == 39);    
     
     $finish;
