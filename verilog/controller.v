@@ -1,7 +1,7 @@
-`DEFINE OPCODE_ENCRYPT  2'b00
-`DEFINE OPCODE_DECRYPT  2'b01
-`DEFINE OPCODE_ADD      2'b10
-`DEFINE OPCODE_MULT     2'b11
+`define OPCODE_ENCRYPT  2'b00
+`define OPCODE_DECRYPT  2'b01
+`define OPCODE_ADD      2'b10
+`define OPCODE_MULT     2'b11
 
 module controller
 #(
@@ -10,7 +10,9 @@ module controller
     parameter CIPHERTEXT_MODULUS = 1024,
     parameter CIPHERTEXT_WIDTH = 10,
     parameter DIMENSION = 10,
-    parameter BIG_N = 30
+    parameter BIG_N = 30,
+    parameter DIM_WIDTH = 4,
+    parameter ADDR_WIDTH = 8
 )
 (
     input clk,
@@ -39,7 +41,7 @@ module controller
         // lowest priority: evolve state
         if (en) begin
             case (opcode_out)
-                OPCODE_ENCRYPT: begin
+                `OPCODE_ENCRYPT: begin
                     if (op1_addr <= op1_base_addr_stored + DIMENSION) begin
                         op1_addr = op1_addr + 1;
                         op2_addr = op2_addr + 1;
@@ -50,7 +52,7 @@ module controller
                     end
                     
                 end
-                OPCODE_DECRYPT: begin
+                `OPCODE_DECRYPT: begin
                     if (op1_addr <= op1_base_addr_stored + DIMENSION) begin
                         op1_addr = op1_addr + 1;
                         op2_addr = op2_addr + 1;
@@ -60,7 +62,7 @@ module controller
                         done = 1;
                     end
                 end
-                OPCODE_ADD: begin
+                `OPCODE_ADD: begin
                     if (op1_addr <= op1_base_addr_stored + DIMENSION) begin
                         op1_addr = op1_addr + 1;
                         op2_addr = op2_addr + 1;
@@ -69,7 +71,7 @@ module controller
                         done = 1;
                     end
                 end
-                OPCODE_MULT: begin
+                `OPCODE_MULT: begin
                     // cycle through op1 addrs
                     // cycle through op2 addrs
                     // push rows through
