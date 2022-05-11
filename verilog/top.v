@@ -10,6 +10,7 @@ module top
     parameter DATA_WIDTH = 128,
     parameter ADDR_WIDTH = 10,
     parameter DEPTH = 1024,
+    parameter DIM_WIDTH = 4
     
 )
 (
@@ -53,11 +54,11 @@ module top
     wire [ADDR_WIDTH - 1 : 0] radr;
     wire [DATA_WIDTH - 1 : 0] rdata;
 
-    wire [PLAINTEXT_WIDTH-1:0] plaintext,
-    wire [CIPHERTEXT_WIDTH-1:0] publickey_row [BIG_N-1:0],
-    wire [BIG_N-1:0] noise_select,
-    wire [DIMENSION:0] encrypt_row,
-    wire [CIPHERTEXT_WIDTH-1:0] ciphertext
+    wire [PLAINTEXT_WIDTH-1:0] plaintext;
+    wire [CIPHERTEXT_WIDTH-1:0] publickey_row [BIG_N-1:0];
+    wire [BIG_N-1:0] noise_select;
+    wire [DIMENSION:0] encrypt_row;
+    wire [CIPHERTEXT_WIDTH-1:0] ciphertext;
 
     wire [CIPHERTEXT_WIDTH-1:0] secretkey_entry;
     wire [CIPHERTEXT_WIDTH-1:0] ciphertext_entry;
@@ -121,7 +122,7 @@ module top
 
     // SRAM
     sram #(
-        .DATA_WIDTH(DATA_WIDTH);
+        .DATA_WIDTH(DATA_WIDTH),
         .ADDR_WIDTH(ADDR_WIDTH),
         .DEPTH(DEPTH)
     ) sram_inst (
