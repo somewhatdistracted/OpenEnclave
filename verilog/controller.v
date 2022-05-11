@@ -40,6 +40,14 @@ module controller
         if (en) begin
             case (opcode_out)
                 OPCODE_ENCRYPT: begin
+                    if (op1_addr <= op1_base_addr_stored + DIMENSION) begin
+                        op1_addr = op1_addr + 1;
+                        op2_addr = op2_addr + 1;
+                        row = row + 1;
+                    end else begin
+                        en = 0;
+                        done = 1;
+                    end
                     
                 end
                 OPCODE_DECRYPT: begin
@@ -65,6 +73,21 @@ module controller
                     // cycle through op1 addrs
                     // cycle through op2 addrs
                     // push rows through
+                    if (op1_addr <= op1_base_addr_stored + DIMENSION) begin
+                        op1_addr = op1_addr + 1;
+                        row = row + 1;
+                        op_select = 0;
+                    end else begin
+                        if (op2_addr <= op2_base_addr_stored + DIMENSION) begin
+                            op2_addr = op2_addr + 1;
+                            row = row + 1;
+                            en = 1;
+                            op_select = 1;
+                        end else begin
+                            en = 0;
+                            done = 1;
+                        end
+                    end
                 end
                 default: begin
 
