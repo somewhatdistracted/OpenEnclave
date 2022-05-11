@@ -14,7 +14,30 @@ module top
     // WISHBONE
     
     // CONTROLLER
-    
+    controller #(
+        .PLAINTEXT_MODULUS(`PLAINTEXT_MODULUS),
+        .PLAINTEXT_WIDTH(`PLAINTEXT_WIDTH),
+        .CIPHERTEXT_MODULUS(`CIPHERTEXT_MODULUS),
+        .CIPHERTEXT_WIDTH(`CIPHERTEXT_WIDTH),
+        .DIMENSION(`DIMENSION),
+        .BIG_N(`BIG_N)
+    ) controller_inst (
+        .clk(clk),
+        .rst_n(rst_n),
+        .opcode(opcode),
+        .config_en(config_en),
+        .op1_base_addr(op1_base_addr),
+        .op2_base_addr(op2_base_addr),
+        .opcode_out(opcode_out),
+        .op1_addr(op1_addr),
+        .op2_addr(op2_addr),
+        .op_select(op_select),
+        .en(en),
+        .done(done),
+        .row(row)
+    );
+
+
     // SRAM
     sram #(
         .WIDTH(WIDTH);
@@ -71,7 +94,24 @@ module top
     );
     
     // MULT
-    
+    homomorphic_multiply #(
+        .PLAINTEXT_MODULUS(`PLAINTEXT_MODULUS),
+        .PLAINTEXT_WIDTH(`PLAINTEXT_WIDTH),
+        .CIPHERTEXT_MODULUS(`CIPHERTEXT_MODULUS),
+        .CIPHERTEXT_WIDTH(`CIPHERTEXT_WIDTH),
+        .DIMENSION(`DIMENSION),
+        .BIG_N(`BIG_N)
+    ) homomorphic_multiply_inst (
+        .clk(clk),
+        .rst_n(rst_n),
+        .ciphertext_entry(ciphertext_entry),
+        .row(row),
+        .ciphertext_select(ciphertext_select),
+        .en(en),
+        .result_partial(result)
+    );
+
+
     // MORE
 
 
