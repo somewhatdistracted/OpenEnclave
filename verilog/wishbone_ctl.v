@@ -49,7 +49,7 @@ module wishbone_ctl #
     always@(posedge wb_clk_i)
         if (wb_rst_i)
             wbs_reg_i <= 32'd0;
-        else if (wbs_req_write)
+        else if (ack_o & wbs_req_write)
             wbs_reg_i <= wbs_dat_i;
     // Sram to Output Data
     always@(posedge wb_clk_i)
@@ -60,7 +60,7 @@ module wishbone_ctl #
 // ==============================================================================
 // Outputs
 // ==============================================================================
-assign wbs_ack_o               = ack_o & output_ready;
+assign wbs_ack_o               = ack_o;
 assign wbs_dat_o               = wbs_reg_o;
 
 assign input_ready             = wbs_req & (wbs_we_i );
