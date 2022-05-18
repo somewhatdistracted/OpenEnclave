@@ -73,14 +73,14 @@ module top
     wire [ADDR_WIDTH - 1 : 0] out_radr;
     wire [DATA_WIDTH - 1 : 0] out_rdata;
 
-    wire [PLAINTEXT_WIDTH-1:0] plaintext;
-    wire [CIPHERTEXT_WIDTH-1:0] publickey_row [BIG_N-1:0];
+    wire [CIPHERTEXT_WIDTH-1:0] plaintext_and_noise;
+    wire [CIPHERTEXT_WIDTH-1:0] publickey_entry;
     wire [BIG_N-1:0] noise_select;
     wire [DIMENSION:0] encrypt_row;
     wire [CIPHERTEXT_WIDTH-1:0] ciphertext_result;
 
     wire [CIPHERTEXT_WIDTH-1:0] secretkey_entry;
-    wire [CIPHERTEXT_WIDTH-1:0] ciphertext_entry;
+    wire [CIPHERTEXT_WIDTH-1:0] ct_entry;
     wire [DIMENSION:0] decrypt_row;
     wire [PLAINTEXT_WIDTH-1:0] decrypt_result;
 
@@ -176,15 +176,15 @@ module top
         .out_wen(out_wen),
         .out_wadr(out_wadr),
         .out_wdata(out_wdata),
-        .ren(op1_ren),
-        .radr(op1_radr),
-        .rdata(op1_rdata),
-        .ren(op2_ren),
-        .radr(op2_radr),
-        .rdata(op2_rdata),
-        .ren(out_ren),
-        .radr(out_radr),
-        .rdata(out_rdata),
+        .op1_ren(op1_ren),
+        .op1_radr(op1_radr),
+        .op1_rdata(op1_rdata),
+        .op2_ren(op2_ren),
+        .op2_radr(op2_radr),
+        .op2_rdata(op2_rdata),
+        .out_ren(out_ren),
+        .out_radr(out_radr),
+        .out_rdata(out_rdata)
     );
     
     // ADDRESS GENERATOR
@@ -194,8 +194,8 @@ module top
 
     assign encrypt_row = row;
 
-    assign plaintext = op1_rdata;
-    assign publickey_row = op2_rdata;
+    assign plaintext_and_noise = op1_rdata;
+    assign publickey_entry = op2_rdata;
     assign noise_select = 42;
     
     // ENCRYPT
@@ -209,9 +209,8 @@ module top
     ) encrypt_inst (
         .clk(clk),
         .rst_n(rst_n),
-        .plaintext(plaintext),
-        .publickey_row(publickey_row),
-        .noise_select(noise_select),
+        .plaintext_and_noise(plaintext_and_noise),
+        .publickey_entry(publickey_entry),
         .row(encrypt_row),
         .ciphertext(ciphertext_result)
     );
@@ -219,7 +218,7 @@ module top
     assign decrypt_row = row;
 
     assign ct_entry = op1_rdata;
-    assign sk_entry = op2_rdata;
+    assign secretkey_entry = op2_rdata;
     
     // DECRYPT
     decrypt #(
@@ -232,7 +231,7 @@ module top
     ) decrypt_inst (
         .clk(clk),
         .rst_n(rst_n),
-        .secretkey_entry(sk_entry),
+        .secretkey_entry(secretkey_entry),
         .ciphertext_entry(ct_entry),
         .row(decrypt_row),
         .result(decrypt_result)

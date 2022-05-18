@@ -5,27 +5,35 @@ module encrypt
     parameter CIPHERTEXT_MODULUS = 1024,
     parameter CIPHERTEXT_WIDTH = 10,
     parameter DIMENSION = 10,
-    parameter BIG_N = 30
+    parameter DIM_WIDTH = 4,
+    parameter BIG_N = 30,
+    parameter PARALLEL = 1
 )
 (
     input clk,
     input rst_n,
 
-    input [PLAINTEXT_WIDTH-1:0] plaintext,
-    input [CIPHERTEXT_WIDTH-1:0] publickey_row [BIG_N-1:0],
-    input [BIG_N-1:0] noise_select,
-    input [DIMENSION:0] row,
+    input [CIPHERTEXT_WIDTH-1:0] plaintext_and_noise,
+    input [CIPHERTEXT_WIDTH-1:0] publickey_entry,
+    input [DIM_WIDTH:0] row,
 
     // note: outputs partial over time
     output wire [CIPHERTEXT_WIDTH-1:0] ciphertext
 );
-    wire [CIPHERTEXT_WIDTH-1:0] psum [BIG_N-1:0];
-    genvar i;
-    generate
-        assign psum[0] = ((row == 0)? plaintext : 0) + (noise_select[0] ? publickey_row[0] : 0);
-        for (i = 1; i < BIG_N; i=i+1) begin
-            assign psum[i] = psum[i-1] + (noise_select[i] ? publickey_row[i] : 0);
+    reg [CIPHERTEXT_WIDTH-1:0] psum;
+    reg [DIM_WIDTH-1:0] last_row;
+
+    always @(posedge clk) begin
+        if (last_row != row) begin
+            psum = 0;
         end
-    endgenerate
-    assign ciphertext = psum[BIG_N-1];
+        if (row == 0) begin
+            psum += plaintext_and_noise[PLAINTEXT_WIDTH-1:0] + plaintext_and_noise[CIPHERTEXT_WIDTH-1] ? publickey_entry : 0;
+        end else begin
+            psum += plaintext_and_noise[CIPHERTEXT_WIDTH-1] ? publickey_entry : 0;
+        end
+        last_row = row;
+    end
+    
+    assign ciphertext = psum;
 endmodule
