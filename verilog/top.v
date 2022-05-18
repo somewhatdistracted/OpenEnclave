@@ -1,3 +1,8 @@
+`define OPCODE_ENCRYPT  2'b00
+`define OPCODE_DECRYPT  2'b01
+`define OPCODE_ADD      2'b10
+`define OPCODE_MULT     2'b11
+
 module top
 #(
     parameter PLAINTEXT_MODULUS = 64,
@@ -6,7 +11,8 @@ module top
     parameter CIPHERTEXT_WIDTH = 10,
     parameter DIMENSION = 10,
     parameter BIG_N = 30,
-    parameter WISHBONE_BASE_ADDR = 32'h30000000,
+    parameter OPCODE_ADDR = 32'h30000000,
+    parameter OUTPUT_ADDR = 32'h10000000,
     parameter DATA_WIDTH = 128,
     parameter ADDR_WIDTH = 10,
     parameter DEPTH = 1024,
@@ -47,18 +53,31 @@ module top
     reg done;
     reg [DIM_WIDTH-1:0] row;
 
-    wire wen;
-    wire [ADDR_WIDTH - 1 : 0] wadr;
-    wire [DATA_WIDTH - 1 : 0] wdata;
-    wire ren;
-    wire [ADDR_WIDTH - 1 : 0] radr;
-    wire [DATA_WIDTH - 1 : 0] rdata;
+    wire in_wen;
+    wire [ADDR_WIDTH - 1 : 0] in_wadr;
+    wire [DATA_WIDTH - 1 : 0] in_wdata;
+
+    wire out_wen;
+    wire [ADDR_WIDTH - 1 : 0] out_wadr;
+    wire [DATA_WIDTH - 1 : 0] out_wdata;
+    
+    wire op1_ren;
+    wire [ADDR_WIDTH - 1 : 0] op1_radr;
+    wire [DATA_WIDTH - 1 : 0] op1_rdata;
+
+    wire op2_ren;
+    wire [ADDR_WIDTH - 1 : 0] op2_radr;
+    wire [DATA_WIDTH - 1 : 0] op2_rdata;
+    
+    wire out_ren;
+    wire [ADDR_WIDTH - 1 : 0] out_radr;
+    wire [DATA_WIDTH - 1 : 0] out_rdata;
 
     wire [PLAINTEXT_WIDTH-1:0] plaintext;
     wire [CIPHERTEXT_WIDTH-1:0] publickey_row [BIG_N-1:0];
     wire [BIG_N-1:0] noise_select;
     wire [DIMENSION:0] encrypt_row;
-    wire [CIPHERTEXT_WIDTH-1:0] ciphertext;
+    wire [CIPHERTEXT_WIDTH-1:0] ciphertext_result;
 
     wire [CIPHERTEXT_WIDTH-1:0] secretkey_entry;
     wire [CIPHERTEXT_WIDTH-1:0] ciphertext_entry;
@@ -75,9 +94,12 @@ module top
     wire mult_en;
     wire [CIPHERTEXT_WIDTH-1:0] mult_result;
 
+    assign wisbone_output = out_rdata;
+    assign wb_ready_o = done;
+
     // WISHBONE
     wishbone_ctl #(
-        .WISHBONE_BASE_ADDR(WISHBONE_BASE_ADDR)
+        .OPCODE_ADDR(OPCODE_ADDR)
     ) wb_inst (
         .wb_clk_i(wb_clk_i),
         .wb_rst_i(wb_rst_i),
@@ -87,14 +109,19 @@ module top
         .wbs_sel_i(wbs_sel_i),
         .wbs_dat_i(wbs_dat_i),
         .wbs_adr_i(wbs_adr_i),
-        .output_ready(wb_ready_i),
+        .output_ready(wb_ready_o),
         .wishbone_output(wishbone_output),
+        .config_en(config_en),
         .input_ready(wb_ready_i),
         .wishbone_data(wishbone_data),
         .wbs_ack_o(wbs_ack_o),
         .wbs_dat_o(wbs_dat_o)        
     );
-    
+
+    assign opcode = wishbone_data[1:0];
+    assign op1_base_addr = wishbone_data[(2+ADDR_WIDTH)-1:2];
+    assign op2_base_addr = wishbone_data[(2+(2*ADDR_WIDTH))-1:(2+ADDR_WIDTH)];
+
     // CONTROLLER
     controller #(
         .PLAINTEXT_MODULUS(PLAINTEXT_MODULUS),
@@ -119,6 +146,22 @@ module top
         .row(row)
     );
 
+    assign in_wen = wb_ready_i;
+    assign in_wadr = wbs_adr_i[ADDR_WIDTH:0];
+    assign in_wdata = wishbone_data;
+
+    assign out_wen = done;
+    assign out_wadr = OUTPUT_ADDR;
+    assign out_wdata = (opcode_out == `OPCODE_ENCRYPT) ? ciphertext_result : ((opcode_out == `OPCODE_DECRYPT) ? decrypt_result : ((opcode_out == `OPCODE_ADD) ? add_result : mult_result));
+
+    assign op1_ren = en;
+    assign op1_radr = op1_addr;
+
+    assign op2_ren = en;
+    assign op2_radr = op2_addr;
+    
+    assign out_ren = done;
+    assign out_radr = OUTPUT_ADDR;
 
     // SRAM
     sram #(
@@ -127,16 +170,33 @@ module top
         .DEPTH(DEPTH)
     ) sram_inst (
         .clk(clk),
-        .wen(wen),
-        .wdata(wdata),
-        .ren(ren),
-        .radr(radr),
-        .rdata(rdata)
+        .in_wen(in_wen),
+        .in_wadr(in_wadr),
+        .in_wdata(in_wdata),
+        .out_wen(out_wen),
+        .out_wadr(out_wadr),
+        .out_wdata(out_wdata),
+        .ren(op1_ren),
+        .radr(op1_radr),
+        .rdata(op1_rdata),
+        .ren(op2_ren),
+        .radr(op2_radr),
+        .rdata(op2_rdata),
+        .ren(out_ren),
+        .radr(out_radr),
+        .rdata(out_rdata),
     );
     
     // ADDRESS GENERATOR
     
     // I/O FIFOS
+
+
+    assign encrypt_row = row;
+
+    assign plaintext = op1_rdata;
+    assign publickey_row = op2_rdata;
+    assign noise_select = 42;
     
     // ENCRYPT
     encrypt #(
@@ -153,8 +213,13 @@ module top
         .publickey_row(publickey_row),
         .noise_select(noise_select),
         .row(encrypt_row),
-        .ciphertext(ciphertext)
-    );    
+        .ciphertext(ciphertext_result)
+    );
+
+    assign decrypt_row = row;
+
+    assign ct_entry = op1_rdata;
+    assign sk_entry = op2_rdata;
     
     // DECRYPT
     decrypt #(
@@ -172,7 +237,10 @@ module top
         .row(decrypt_row),
         .result(decrypt_result)
     );
-    
+
+    assign ciphertext1 = op1_rdata;
+    assign ciphertext2 = op2_rdata;
+
     // ADD
     homomorphic_add #(
         .PLAINTEXT_MODULUS(PLAINTEXT_MODULUS),
@@ -188,8 +256,13 @@ module top
         .ciphertext2(ciphertext2),
         .result(add_result)
     );
-    
-    
+        
+    assign mult_row = row;
+    assign mult_en = en & (opcode_out == `OPCODE_MULT);
+    assign ciphertext_select = op_select;
+
+    assign ciphertext_entry = op1_rdata;     
+
     // MULT
     homomorphic_multiply #(
         .PLAINTEXT_MODULUS(PLAINTEXT_MODULUS),
@@ -207,9 +280,5 @@ module top
         .en(mult_en),
         .result_partial(mult_result)
     );
-
-
-    // MORE
-
 
 endmodule
