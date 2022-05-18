@@ -30,7 +30,7 @@ module encrypt_tb;
     ) encrypt_inst (
         .clk(clk),
         .rst_n(rst_n),
-        .plaintext(plaintext),
+        .plaintext_and_noise(plaintext),
         .publickey_row(publickey_row),
         .noise_select(noise_select),
         .row(row),

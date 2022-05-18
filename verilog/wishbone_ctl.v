@@ -63,7 +63,7 @@ module wishbone_ctl #
 // ==============================================================================
 // Outputs
 // ==============================================================================
-assign config_en               = wbs_reg & (wbs_adr_i == OPCODE_ADDR)
+assign config_en               = wbs_req & (wbs_adr_i == OPCODE_ADDR);
 
 assign wbs_ack_o               = ack_o;
 assign wbs_dat_o               = wbs_reg_o;
