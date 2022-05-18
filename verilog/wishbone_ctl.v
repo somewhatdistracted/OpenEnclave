@@ -1,6 +1,6 @@
 module wishbone_ctl #
 (
-    parameter WISHBONE_BASE_ADDR = 32'h30000000
+    parameter OPCODE_ADDR = 32'h30000000
 )
 (
     // wishbone input
@@ -16,7 +16,10 @@ module wishbone_ctl #
     // control input
     input       output_ready,
     input [31:0] wishbone_output,
-  
+ 
+    // controller config enable
+    output        config_en,    
+
     //control output
     output        input_ready,
     output [31:0] wishbone_data,
@@ -60,10 +63,12 @@ module wishbone_ctl #
 // ==============================================================================
 // Outputs
 // ==============================================================================
+assign config_en               = wbs_reg & (wbs_adr_i == OPCODE_ADDR)
+
 assign wbs_ack_o               = ack_o;
 assign wbs_dat_o               = wbs_reg_o;
 
-assign input_ready             = wbs_req & (wbs_we_i );
+assign input_ready             = wbs_req & (wbs_we_i);
 assign wishbone_data           = wbs_reg_i;
 
 endmodule
