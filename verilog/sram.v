@@ -32,17 +32,17 @@ module sram
                 //       Since we will try to push for a clock period of 5ns, we manually
                 //       changed the delay number to 1ns (< 2.5ns) to prevent functional error.
                 sky130_sram_1kbyte_1rw1r_32x256_8 sram (
-                .clk0(clk),
-                .csb0(~(wen && (wadr[ADDR_WIDTH - 1 : 8] == y))),
-                .web0(~(wen && (wadr[ADDR_WIDTH - 1 : 8] == y))), // And wadr in range
-                .wmask0(4'hF),
-                .addr0(wadr[7:0]),
-                .din0(wdata[32*(x+1)-1 : 32*x]),
-                .dout0(),
-                .clk1(clk),
-                .csb1(~(ren && (radr[ADDR_WIDTH - 1 : 8] == y))), // And radr in range
-                .addr1(radr[7:0]),
-                .dout1(rdata_w[y][32*(x+1)-1 : 32*x])
+                    .clk0(clk),
+                    .csb0(~(wen && (wadr[ADDR_WIDTH - 1 : 8] == y))),
+                    .web0(~(wen && (wadr[ADDR_WIDTH - 1 : 8] == y))), // And wadr in range
+                    .wmask0(4'hF),
+                    .addr0(wadr[7:0]),
+                    .din0(wdata[32*(x+1)-1 : 32*x]),
+                    .dout0(),
+                    .clk1(clk),
+                    .csb1(~(ren && (radr[ADDR_WIDTH - 1 : 8] == y))), // And radr in range
+                    .addr1(radr[7:0]),
+                    .dout1(rdata_w[y][32*(x+1)-1 : 32*x])
                 );
             end
         end
