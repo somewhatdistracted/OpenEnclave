@@ -76,7 +76,7 @@ module top
     wire [CIPHERTEXT_WIDTH-1:0] plaintext_and_noise;
     wire [CIPHERTEXT_WIDTH-1:0] publickey_entry;
     wire [BIG_N-1:0] noise_select;
-    wire [DIMENSION:0] encrypt_row;
+    wire [DIM_WIDTH-1:0] encrypt_row;
     wire [CIPHERTEXT_WIDTH-1:0] ciphertext_result;
 
     wire [CIPHERTEXT_WIDTH-1:0] secretkey_entry;
@@ -129,7 +129,8 @@ module top
         .CIPHERTEXT_MODULUS(CIPHERTEXT_MODULUS),
         .CIPHERTEXT_WIDTH(CIPHERTEXT_WIDTH),
         .DIMENSION(DIMENSION),
-        .BIG_N(BIG_N)
+        .BIG_N(BIG_N),
+        .ADDR_WIDTH(ADDR_WIDTH)
     ) controller_inst (
         .clk(clk),
         .rst_n(rst_n),
@@ -205,6 +206,7 @@ module top
         .CIPHERTEXT_MODULUS(CIPHERTEXT_MODULUS),
         .CIPHERTEXT_WIDTH(CIPHERTEXT_WIDTH),
         .DIMENSION(DIMENSION),
+        .DIM_WIDTH(DIM_WIDTH),
         .BIG_N(BIG_N)
     ) encrypt_inst (
         .clk(clk),
