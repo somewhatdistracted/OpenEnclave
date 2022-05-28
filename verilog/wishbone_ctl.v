@@ -47,19 +47,21 @@ module wishbone_ctl #
 // ==============================================================================
 // Latching
 // ==============================================================================
-    wire wbs_req_write = (!ack_o) & wbs_req & (wbs_we_i);
+    wire wbs_req_write = wbs_req & (wbs_we_i);
     // Input Data to Sram
-    always@(posedge wb_clk_i)
+    always@(posedge wb_clk_i) begin
         if (wb_rst_i)
             wbs_reg_i <= 32'd0;
-        else if (ack_o & wbs_req_write)
-            wbs_reg_i <= wbs_dat_i;
+        else if (wbs_req_write)
+	    wbs_reg_i <= wbs_dat_i;
+    end
     // Sram to Output Data
-    always@(posedge wb_clk_i)
+    always@(posedge wb_clk_i) begin
         if (wb_rst_i)
             wbs_reg_o <= 32'd0;
-        else if (ack_o & output_ready)
+        else if (output_ready)
             wbs_reg_o <= wishbone_output;
+    end
 // ==============================================================================
 // Outputs
 // ==============================================================================

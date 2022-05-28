@@ -52,7 +52,7 @@ module sram
                 //       any delay < half a cycle will not affect the simulation result.
                 //       Since we will try to push for a clock period of 5ns, we manually
                 //       changed the delay number to 1ns (< 2.5ns) to prevent functional error.
-                sky130_sram_1kbyte_1rw1r_32x256_8 sram (
+                sky130_sram_1kbyte_1rw1r_32x256_8 sram1 (
                     .clk0(clk),
                     .csb0(~(in_wen && (in_wadr[ADDR_WIDTH - 1 : 8] == y))),
                     .web0(~(in_wen && (in_wadr[ADDR_WIDTH - 1 : 8] == y))), // And wadr in range
@@ -77,7 +77,7 @@ module sram
                 //       any delay < half a cycle will not affect the simulation result.
                 //       Since we will try to push for a clock period of 5ns, we manually
                 //       changed the delay number to 1ns (< 2.5ns) to prevent functional error.
-                sky130_sram_1kbyte_1rw1r_32x256_8 sram (
+                sky130_sram_1kbyte_1rw1r_32x256_8 sram2 (
                     .clk0(clk),
                     .csb0(~(in_wen && (in_wadr[ADDR_WIDTH - 1 : 8] == y))),
                     .web0(~(in_wen && (in_wadr[ADDR_WIDTH - 1 : 8] == y))), // And wadr in range
@@ -102,7 +102,7 @@ module sram
                 //       any delay < half a cycle will not affect the simulation result.
                 //       Since we will try to push for a clock period of 5ns, we manually
                 //       changed the delay number to 1ns (< 2.5ns) to prevent functional error.
-                sky130_sram_1kbyte_1rw1r_32x256_8 sram (
+                sky130_sram_1kbyte_1rw1r_32x256_8 sram3 (
                     .clk0(clk),
                     .csb0(~(out_wen && (out_wadr[ADDR_WIDTH - 1 : 8] == y))),
                     .web0(~(out_wen && (out_wadr[ADDR_WIDTH - 1 : 8] == y))), // And wadr in range
@@ -118,10 +118,10 @@ module sram
             end
         end
 
-        assign op1_rdata = op1_rdata_w[op1_radr_r[ADDR_WIDTH - 1 : 8]];
-        assign op2_rdata = op2_rdata_w[op2_radr_r[ADDR_WIDTH - 1 : 8]];
-        assign out_rdata = out_rdata_w[out_radr_r[ADDR_WIDTH - 1 : 8]];
-
     endgenerate
+
+    assign op1_rdata = op1_rdata_w[op1_radr_r[ADDR_WIDTH - 1 : 8]];
+    assign op2_rdata = op2_rdata_w[op2_radr_r[ADDR_WIDTH - 1 : 8]];
+    assign out_rdata = out_rdata_w[out_radr_r[ADDR_WIDTH - 1 : 8]];
 
 endmodule

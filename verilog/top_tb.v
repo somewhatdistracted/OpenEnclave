@@ -62,7 +62,22 @@ module top_tb;
   initial begin
 
     clk = 0;
+    rst_n = 0;
+
+    wb_clk_i = 0;
+    wb_rst_i = 0;
+    wbs_stb_i = 0;
+    wbs_cyc_i = 0;
+    wbs_we_i = 0;
+
+    wbs_sel_i = 0;
+    wbs_dat_i = 0;
+    wbs_adr_i = 0;
+
     #20
+
+    #20
+
     $finish;
 
   end
