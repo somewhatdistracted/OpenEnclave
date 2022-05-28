@@ -1,0 +1,39 @@
+#! /usr/bin/env bash
+set -euo pipefail
+#=========================================================================
+# mflowgen-run
+#=========================================================================
+# Generator : /home/users/ianpmac/EE372-Project/mflowgen/mflowgen/core/build_orchestrator.py
+
+# Pre
+
+rm -f .time_end
+date +%Y-%m%d-%H%M-%S > .time_start
+MFLOWGEN_STEP_HOME=$PWD
+export order=main.tcl,generate-results.tcl,reporting.tcl
+
+# Commands
+
+ln -sf inputs/innovus-foundation-flow
+innovus -overwrite -64 -nowin -init START.tcl -log logs/run.log
+cd outputs
+ln -sf ../checkpoints/design.checkpoint
+ln -sf ../typical.spef.gz             design.spef.gz
+ln -sf ../rcbest.spef.gz              design.rcbest.spef.gz
+ln -sf ../results/*.gds.gz            design.gds.gz
+ln -sf ../results/*-merged.gds        design-merged.gds
+ln -sf ../results/*.lvs.v             design.lvs.v
+ln -sf ../results/*.flatbuslvs.v      design.flatbuslvs.v
+ln -sf ../results/*.vcs.v             design.vcs.v
+ln -sf ../results/*.vcs.pg.v          design.vcs.pg.v
+ln -sf ../results/*.lef               design.lef
+ln -sf ../results/*.def.gz            design.def.gz
+ln -sf ../results/*.sdc               design.sdc
+ln -sf ../results/*.sdf               design.sdf
+ln -sf ../results/*.virtuoso.v        design.virtuoso.v
+
+# Post
+
+cd $MFLOWGEN_STEP_HOME
+date +%Y-%m%d-%H%M-%S > .time_end
+

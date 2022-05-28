@@ -1,0 +1,112 @@
+build_dir: 20-cadence-innovus-signoff
+build_id: '20'
+commands:
+- ln -sf inputs/innovus-foundation-flow
+- innovus -overwrite -64 -nowin -init START.tcl -log logs/run.log
+- cd outputs
+- ln -sf ../checkpoints/design.checkpoint
+- ln -sf ../typical.spef.gz             design.spef.gz
+- ln -sf ../rcbest.spef.gz              design.rcbest.spef.gz
+- ln -sf ../results/*.gds.gz            design.gds.gz
+- ln -sf ../results/*-merged.gds        design-merged.gds
+- ln -sf ../results/*.lvs.v             design.lvs.v
+- ln -sf ../results/*.flatbuslvs.v      design.flatbuslvs.v
+- ln -sf ../results/*.vcs.v             design.vcs.v
+- ln -sf ../results/*.vcs.pg.v          design.vcs.pg.v
+- ln -sf ../results/*.lef               design.lef
+- ln -sf ../results/*.def.gz            design.def.gz
+- ln -sf ../results/*.sdc               design.sdc
+- ln -sf ../results/*.sdf               design.sdf
+- ln -sf ../results/*.virtuoso.v        design.virtuoso.v
+debug:
+- innovus -overwrite -64 -init innovus-foundation-flow/custom-scripts/run-debug.tcl
+  -log logs/debug.log
+edges_i:
+  adk:
+  - f: adk
+    step: 5-skywater-130nm
+  design.checkpoint:
+  - f: design.checkpoint
+    step: 19-cadence-innovus-postroute
+  innovus-foundation-flow:
+  - f: innovus-foundation-flow
+    step: 12-cadence-innovus-flowsetup
+  sky130_sram_1kbyte_1rw1r_32x256_8.lef:
+  - f: sky130_sram_1kbyte_1rw1r_32x256_8.lef
+    step: 6-sram
+  sky130_sram_1kbyte_1rw1r_32x256_8_TT_1p8V_25C.lib:
+  - f: sky130_sram_1kbyte_1rw1r_32x256_8_TT_1p8V_25C.lib
+    step: 6-sram
+edges_o:
+  design.def.gz:
+  - f: design.def.gz
+    step: 22-open-magic-def2spice
+  design.flatbuslvs.v:
+  - f: design.flatbuslvs.v
+    step: 26-netgen-lvs-def
+  - f: design.flatbuslvs.v
+    step: 34-netgen-lvs-gds
+  - f: design.flatbuslvs.v
+    step: 32-mentor-calibre-comparison
+  - f: design.flatbuslvs.v
+    step: 33-mentor-calibre-comparison-nobbox
+  design.gds.gz:
+  - f: design.gds.gz
+    step: 21-mentor-calibre-gdsmerge
+  design.lvs.v:
+  - f: design.lvs.v
+    step: 26-netgen-lvs-def
+  - f: design.lvs.v
+    step: 34-netgen-lvs-gds
+  design.spef.gz:
+  - f: design.spef.gz
+    step: 24-synopsys-pt-timing-signoff
+  - f: design.spef.gz
+    step: 23-ptpx-rtl
+  - f: design.spef.gz
+    step: 35-ptpx-gl
+  design.vcs.pg.v:
+  - f: design.vcs.v
+    step: 25-gl-sim
+  design.vcs.v:
+  - f: design.vcs.v
+    step: 24-synopsys-pt-timing-signoff
+  - f: design.vcs.v
+    step: 23-ptpx-rtl
+  - f: design.vcs.v
+    step: 35-ptpx-gl
+inputs:
+- innovus-foundation-flow
+- adk
+- design.checkpoint
+- sky130_sram_1kbyte_1rw1r_32x256_8_TT_1p8V_25C.lib
+- sky130_sram_1kbyte_1rw1r_32x256_8.lef
+name: cadence-innovus-signoff
+outputs:
+- design.checkpoint
+- design.gds.gz
+- design-merged.gds
+- design.lvs.v
+- design.flatbuslvs.v
+- design.vcs.v
+- design.vcs.pg.v
+- design.lef
+- design.def.gz
+- design.sdc
+- design.sdf
+- design.virtuoso.v
+- design.spef.gz
+- design.rcbest.spef.gz
+parameters:
+  order:
+  - main.tcl
+  - generate-results.tcl
+  - reporting.tcl
+postconditions:
+- assert File( 'outputs/design.checkpoint' )
+preconditions:
+- assert Tool( 'innovus' )
+- assert File( 'inputs/innovus-foundation-flow' )
+- assert File( 'inputs/adk' )
+- assert File( 'inputs/design.checkpoint' )
+source: /home/users/ianpmac/EE372-Project/skywater-digital-flow/HEModules/design/cadence-innovus-signoff
