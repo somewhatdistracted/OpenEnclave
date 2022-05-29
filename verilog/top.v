@@ -15,30 +15,19 @@ module top
     parameter DIMENSION = 10,
     parameter BIG_N = 30,
     parameter OPCODE_ADDR = 32'h30000000,
-    parameter OUTPUT_ADDR = 32'h10000000,
+    parameter OUTPUT_ADDR = 32'h00000001,
     parameter DATA_WIDTH = 64,
-    parameter ADDR_WIDTH = 9,
+    parameter ADDR_WIDTH = 10,
     parameter DEPTH = 512,
-    parameter DIM_WIDTH = 4
-    
+    parameter DIM_WIDTH = 4,
+    parameter USE_POWER_PINS = 0, 
+    parameter ENABLE_FULL_IO = 0  
 )
 (
-`ifdef USE_POWER_PINS
+  `ifdef USE_POWER_PINS
     inout vccd1,
     inout vssd1,
-`endif
-
-    // Wishbone
-    input wire       wb_clk_i,
-    input wire       wb_rst_i,
-    input wire       wbs_stb_i,
-    input wire       wbs_cyc_i,
-    input wire       wbs_we_i,
-    input wire [3:0]  wbs_sel_i,
-    input wire [31:0] wbs_dat_i,
-    input wire [31:0] wbs_adr_i,
-    output wire        wbs_ack_o,
-    output wire [31:0] wbs_dat_o,
+  `endif
 
     // Logic Analyzer
     // [0] -> gpio (1) / wishbone (0) select
@@ -62,7 +51,19 @@ module top
     input wire user_clock2,
 
     // User maskable interrupt signals
-    output wire [2:0] user_irq
+    output wire [2:0] user_irq,
+
+    //Wishbone
+    input wire       wb_clk_i,
+    input wire       wb_rst_i,
+    input wire       wbs_stb_i,
+    input wire       wbs_cyc_i,
+    input wire       wbs_we_i,
+    input wire [3:0]  wbs_sel_i,
+    input wire [31:0] wbs_dat_i,
+    input wire [31:0] wbs_adr_i,
+    output wire        wbs_ack_o,
+    output wire [31:0] wbs_dat_o
 );  
     wire clk;
     wire rst_n;
@@ -131,6 +132,36 @@ module top
     assign wisbone_output = out_rdata;
     assign wb_ready_o = done;
 
+    //Debug Prints
+    always@(negedge clk) begin
+      $display("Chip Output = %d", wbs_dat_o);
+      $display("Wishbone In = %d", wbs_dat_i);
+      $display("Wishbone Data = %d", wishbone_data);
+      $display("Wishbone ADR = %d", wbs_adr_i);
+      $display("WB In EN = %d", wb_ready_i);
+      $display("WB O EN = %d", wb_ready_o);
+      $display("Config = %d", config_en);
+      $display("OPCODE = %d", opcode_out);
+      $display("SRAM Write Data = %d", in_wdata);
+      $display("SRAM Write Adr = %d", in_wadr);
+      $display("SRAM OW Data = %d", out_wdata);
+      $display("SRAM OR Data = %d", out_rdata);
+      $display("SRAM O Adr = %d", out_radr);
+      $display("Op Data 1 = %d", op1_rdata);
+      $display("Op Data 2 = %d", op2_rdata);
+      $display("Op Adr 1 = %d", op1_radr);
+      $display("Op Adr 2 = %d", op2_radr);
+      $display("Op Base Adr 1 = %d", op1_base_addr);
+      $display("Op Base Adr 2 = %d", op2_base_addr);
+      $display("Row = %d", row);
+
+      $display("Reset = %d", rst_n);
+      $display("En = %d", en);
+      $display("Done = %d", done);
+
+      $display(" ");
+    end
+
     // WISHBONE
     wishbone_ctl #(
         .OPCODE_ADDR(OPCODE_ADDR)
@@ -181,13 +212,14 @@ module top
         .row(row)
     );
 
-    assign in_wen = wb_ready_i;
+    assign in_wen = wb_ready_i & ~config_en;
     assign in_wadr = wbs_adr_i[ADDR_WIDTH:0];
     assign in_wdata = wishbone_data;
 
-    assign out_wen = done;
+    assign out_wen = en;
     assign out_wadr = OUTPUT_ADDR;
-    assign out_wdata = (opcode_out == `OPCODE_ENCRYPT) ? ciphertext_result : ((opcode_out == `OPCODE_DECRYPT) ? decrypt_result : ((opcode_out == `OPCODE_ADD) ? add_result : mult_result));
+    //assign out_wdata = (opcode_out == `OPCODE_ENCRYPT) ? ciphertext_result : ((opcode_out == `OPCODE_DECRYPT) ? decrypt_result : ((opcode_out == `OPCODE_ADD) ? add_result : mult_result));
+    assign out_wdata = add_result;
 
     assign op1_ren = en;
     assign op1_radr = op1_addr;
@@ -195,7 +227,7 @@ module top
     assign op2_ren = en;
     assign op2_radr = op2_addr;
     
-    assign out_ren = done;
+    assign out_ren = en;
     assign out_radr = OUTPUT_ADDR;
 
     // SRAM
