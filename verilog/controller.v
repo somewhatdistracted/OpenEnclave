@@ -12,7 +12,7 @@ module controller
     parameter DIMENSION = 10,
     parameter BIG_N = 30,
     parameter DIM_WIDTH = 4,
-    parameter ADDR_WIDTH = 8
+    parameter ADDR_WIDTH = 10
 )
 (
     input clk,
@@ -22,11 +22,13 @@ module controller
     input config_en,
     input [ADDR_WIDTH-1:0] op1_base_addr,
     input [ADDR_WIDTH-1:0] op2_base_addr,
+    input [ADDR_WIDTH-1:0] out_base_addr,
     
 
     output reg [1:0] opcode_out,
     output reg [ADDR_WIDTH-1:0] op1_addr,
     output reg [ADDR_WIDTH-1:0] op2_addr,
+    output reg [ADDR_WIDTH-1:0] out_addr,
     output reg op_select,
     output reg en,
     output reg done,
@@ -35,6 +37,7 @@ module controller
 
     reg [ADDR_WIDTH-1:0] op1_base_addr_stored;
     reg [ADDR_WIDTH-1:0] op2_base_addr_stored;
+    reg [ADDR_WIDTH-1:0] out_base_addr_stored;
 
     always @(posedge clk) begin
 
@@ -66,6 +69,7 @@ module controller
                     if (op1_addr <= op1_base_addr_stored + DIMENSION) begin
                         op1_addr = op1_addr + 1;
                         op2_addr = op2_addr + 1;
+                        out_addr = out_addr + 1;
                     end else begin
                         en = 0;
                         done = 1;
@@ -106,6 +110,7 @@ module controller
             opcode_out = opcode;
             op1_addr = op1_base_addr;
             op2_addr = op2_base_addr;
+            out_addr = out_base_addr;
             en = 0;
             done = 0;
             row = 0;
@@ -116,6 +121,7 @@ module controller
             opcode_out = 0;
             op1_addr = 0;
             op2_addr = 0;
+            out_addr = 0;
             op_select = 0;
             en = 0;
             row = 0;
