@@ -1,15 +1,17 @@
-debug: run_conv
+debug:
 	dve -full64 -vpd dump.vcd &
 
 run: compile
 	./simv
 
-compile: 
-	vcs -full64 -sverilog -timescale=1ns/1ps -debug_access+pp verilog/$(target).v verilog/encrypt.v verilog/decrypt.v verilog/homomorphic_add.v verilog/homomorphic_multiply.v verilog/sram.v verilog/controller.v verilog/sky130_sram_1kbyte_1rw1r_32x256_8.v verilog/wishbone_ctl.v
+concat: clean
+	cat verilog/defs.v verilog/top.v verilog/sram.v verilog/wishbone_ctl.v verilog/controller.v verilog/encrypt.v verilog/decrypt.v verilog/homomorphic_add.v verilog/homomorphic_multiply.v > verilog/outputs/design.v
+
+compile: concat
+	vcs -full64 -sverilog -timescale=1ns/1ps -debug_access+pp verilog/$(target).v verilog/sky130_sram_1kbyte_1rw1r_32x256_8.v verilog/outputs/design.v 
 	
-copy_verilog:
-	cat verilog/top.v verilog/sram.v verilog/wishbone_ctl.v verilog/controller.v verilog/encrypt.v verilog/decrypt.v verilog/homomorphic_add.v verilog/homomorphic_multiply.v > design.v
-	cp design.v skywater-digital-flow/OpenEnclave/design/rtl/design.v
+copy_verilog: concat
+	cp verilog/outputs/design.v skywater-digital-flow/OpenEnclave/design/rtl/design.v
 
 clean:
 	rm -rf simv
@@ -19,4 +21,4 @@ clean:
 	rm -rf ucli.key
 	rm -rf vc_hdrs.h
 	rm -rf DVEfiles
-	rm -rf design.v
+	rm -rf verilog/outputs/design.v
