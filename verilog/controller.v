@@ -76,11 +76,13 @@ module controller
                     // push rows through
                     if (op1_addr <= op1_base_addr_stored + DIMENSION) begin
                         op1_addr = op1_addr + 1;
+                        out_addr = out_addr + 1; // note: this will cover second half of last answer
                         row = row + 1;
                         op_select = 0;
                     end else begin
                         if (op2_addr <= op2_base_addr_stored + DIMENSION) begin
                             op2_addr = op2_addr + 1;
+                            out_addr = out_addr + 1; // note: this will cover first half of this answer
                             row = row + 1;
                             en = 1;
                             op_select = 1;
@@ -106,6 +108,9 @@ module controller
             op1_addr = op1_base_addr;
             op2_addr = op2_base_addr;
             out_addr = out_base_addr;
+            op1_base_addr_stored = op1_base_addr;
+            op2_base_addr_stored = op2_base_addr;
+            out_base_addr_stored = out_base_addr;
             en = 0;
             done = 0;
             row = 0;
@@ -117,6 +122,9 @@ module controller
             op1_addr = 0;
             op2_addr = 0;
             out_addr = 0;
+            op1_base_addr_stored = 0;
+            op2_base_addr_stored = 0;
+            out_base_addr_stored = 0;
             op_select = 0;
             en = 0;
             row = 0;
