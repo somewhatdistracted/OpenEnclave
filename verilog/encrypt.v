@@ -15,7 +15,7 @@ module encrypt
 
     input [CIPHERTEXT_WIDTH-1:0] plaintext_and_noise,
     input [CIPHERTEXT_WIDTH-1:0] publickey_entry,
-    input [DIM_WIDTH-1:0] row,
+    input [DIM_WIDTH:0] row,
 
     // note: outputs partial over time
     output wire [CIPHERTEXT_WIDTH-1:0] ciphertext
