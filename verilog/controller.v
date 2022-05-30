@@ -41,7 +41,7 @@ module controller
         if (en) begin
             case (opcode_out)
                 `OPCODE_ENCRYPT: begin
-                    if (op1_addr < op1_base_addr_stored + DIMENSION) begin
+                    if (op1_addr <= op1_base_addr_stored + DIMENSION) begin
                         op1_addr = op1_addr + 1;
                         op2_addr = op2_addr + 1;
                         row = row + 1;
@@ -52,7 +52,7 @@ module controller
                     
                 end
                 `OPCODE_DECRYPT: begin
-                    if (op1_addr < op1_base_addr_stored + DIMENSION) begin
+                    if (op1_addr <= op1_base_addr_stored + DIMENSION) begin
                         op1_addr = op1_addr + 1;
                         op2_addr = op2_addr + 1;
                         row = row + 1;
@@ -65,7 +65,7 @@ module controller
                     if (op1_addr == op1_base_addr_stored) begin
                         op1_addr = op1_addr + 1;
                         op2_addr = op2_addr + 1;
-                    end else if (op1_addr < op1_base_addr_stored + DIMENSION) begin
+                    end else if (op1_addr <= op1_base_addr_stored + DIMENSION) begin
                         op1_addr = op1_addr + 1;
                         op2_addr = op2_addr + 1;
                         out_addr = out_addr + 1;
@@ -78,13 +78,13 @@ module controller
                     // cycle through op1 addrs
                     // cycle through op2 addrs
                     // push rows through
-                    if (op1_addr < op1_base_addr_stored + DIMENSION) begin
+                    if (op1_addr <= op1_base_addr_stored + DIMENSION) begin
                         op1_addr = op1_addr + 1;
                         out_addr = out_addr + 1; // note: this will cover second half of last answer
                         row = row + 1;
                         op_select = 0;
                     end else begin
-                        if (op2_addr < op2_base_addr_stored + DIMENSION) begin
+                        if (op2_addr <= op2_base_addr_stored + DIMENSION) begin
                             op2_addr = op2_addr + 1;
                             out_addr = out_addr + 1; // note: this will cover first half of this answer
                             row = row + 1;
