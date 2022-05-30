@@ -21,6 +21,7 @@ module wishbone_ctl #
 
     //control output
     output [31:0] wishbone_data,
+    output [31:0] wishbone_addr,
     output        wb_read_req,
     output        wb_write_req,
 
@@ -31,6 +32,8 @@ module wishbone_ctl #
   
   reg [31:0] wbs_reg_i;
   reg [31:0] wbs_reg_o;
+
+  reg [31:0] wbs_reg_addr;
 
 // ==============================================================================
 // Request, Acknowledgement
@@ -47,31 +50,33 @@ module wishbone_ctl #
 // ==============================================================================
 // Latching
 // ==============================================================================
-    wire wbs_req_write = (!ack_o) & wbs_req & (wbs_we_i );
-    wire wbs_req_read  = (!ack_o) & wbs_req & (~wbs_we_i);
+    wire wbs_req_write = (ack_o) & wbs_req & (wbs_we_i );
+    wire wbs_req_read  = (ack_o) & wbs_req & (~wbs_we_i);
     // Input Data to Sram
     always@(posedge wb_clk_i) begin
+        wbs_reg_addr = wbs_adr_i;
         if (wb_rst_i)
             wbs_reg_i <= 32'd0;
         else if (wbs_req_write)
 	    wbs_reg_i <= wbs_dat_i;
     end
     // Sram to Output Data
-    always@(posedge wb_clk_i) begin
-        if (wb_rst_i)
-            wbs_reg_o <= 32'd0;
-        else if (wbs_req_read)
-            wbs_reg_o <= wishbone_output;
-    end
+    //always@(posedge wb_clk_i) begin
+    //    if (wb_rst_i)
+    //        wbs_reg_o <= 32'd0;
+    //    else if (wbs_req_read)
+    //        wbs_reg_o <= wishbone_output;
+    //end
 // ==============================================================================
 // Outputs
 // ==============================================================================
 assign config_en               = wbs_req & (wbs_adr_i == OPCODE_ADDR);
 
 assign wbs_ack_o               = ack_o;
-assign wbs_dat_o               = wbs_reg_o;
+assign wbs_dat_o               = wishbone_output;
 
 assign wishbone_data           = wbs_reg_i;
+assign wishbone_addr           = wbs_reg_addr;
 
 assign wb_read_req             = wbs_req_read;
 assign wb_write_req            = wbs_req_write;

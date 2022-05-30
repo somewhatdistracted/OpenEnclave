@@ -68,6 +68,7 @@ module top
 
     wire [31:0] wishbone_output;
     wire [31:0] wishbone_data;
+    wire [31:0] wishbone_addr;
     wire wb_read_req;
     wire wb_write_req;
    
@@ -75,9 +76,11 @@ module top
     wire config_en;
     wire [ADDR_WIDTH-1:0] op1_base_addr;
     wire [ADDR_WIDTH-1:0] op2_base_addr;
+    wire [ADDR_WIDTH-1:0] out_base_addr;
     reg [1:0] opcode_out;
     reg [ADDR_WIDTH-1:0] op1_addr;
     reg [ADDR_WIDTH-1:0] op2_addr;
+    reg [ADDR_WIDTH-1:0] out_addr;
     reg op_select;
     reg en;
     reg done;
@@ -124,10 +127,10 @@ module top
     wire mult_en;
     wire [CIPHERTEXT_WIDTH-1:0] mult_result;
 
-    assign wisbone_output = out_rdata;
+    assign wishbone_output = out_rdata;
 
     //Debug Prints
-    always@(negedge clk) begin
+    always@(posedge clk) begin
       $display("Chip Output = %d", wbs_dat_o);
       $display("Wishbone In = %d", wbs_dat_i);
       $display("Wishbone Data = %d", wishbone_data);
@@ -137,6 +140,7 @@ module top
       $display("SRAM Write Data = %d", in_wdata);
       $display("SRAM Write Adr = %d", in_wadr);
       $display("SRAM OW Data = %d", out_wdata);
+      $display("SRAM OW ADDR = %d", out_wadr);
       $display("SRAM OR Data = %d", out_rdata);
       $display("SRAM O Adr = %d", out_radr);
       $display("Op Data 1 = %d", op1_rdata);
@@ -169,6 +173,7 @@ module top
         .wishbone_output(wishbone_output),
         .config_en(config_en),
         .wishbone_data(wishbone_data),
+        .wishbone_addr(wishbone_addr),
         .wb_read_req(wb_read_req),
         .wb_write_req(wb_write_req),
         .wbs_ack_o(wbs_ack_o),
@@ -208,8 +213,8 @@ module top
     );
 
     //SRAM
-    assign in_wen = wb_write_req;
-    assign in_wadr = wbs_adr_i[ADDR_WIDTH:0];
+    assign in_wen = wb_write_req & !config_en;
+    assign in_wadr = wishbone_addr[ADDR_WIDTH:0];
     assign in_wdata = wishbone_data;
 
     assign out_wen = en;
@@ -223,7 +228,7 @@ module top
     assign op2_radr = op2_addr;
 
     assign out_ren = wb_read_req;
-    assign out_radr = wbs_adr_i[ADDR_WIDTH:0];
+    assign out_radr = wishbone_addr[ADDR_WIDTH:0];
 
     sram #(
         .DATA_WIDTH(DATA_WIDTH),
