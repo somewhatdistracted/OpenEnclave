@@ -62,7 +62,10 @@ module controller
                     end
                 end
                 `OPCODE_ADD: begin
-                    if (op1_addr < op1_base_addr_stored + DIMENSION) begin
+                    if (op1_addr == op1_base_addr_stored) begin
+                        op1_addr = op1_addr + 1;
+                        op2_addr = op2_addr + 1;
+                    end else if (op1_addr < op1_base_addr_stored + DIMENSION) begin
                         op1_addr = op1_addr + 1;
                         op2_addr = op2_addr + 1;
                         out_addr = out_addr + 1;
