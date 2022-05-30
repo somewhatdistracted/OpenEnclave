@@ -17,6 +17,6 @@ module homomorphic_add
     output wire [CIPHERTEXT_WIDTH-1:0] result
 );
 
-  assign result = ciphertext1 + ciphertext2;
+    assign result = ciphertext1 + ciphertext2;
   
 endmodule

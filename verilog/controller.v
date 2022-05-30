@@ -18,6 +18,7 @@ module controller
     input [ADDR_WIDTH-1:0] op1_base_addr,
     input [ADDR_WIDTH-1:0] op2_base_addr,
     input [ADDR_WIDTH-1:0] out_base_addr,
+    input [BIG_N-1:0] noise,
     
 
     output reg [1:0] opcode_out,
@@ -29,7 +30,7 @@ module controller
     output reg done,
     output reg [DIM_WIDTH-1:0] row
 );
-
+    reg [BIG_N-1:0] noise_stored;
     reg [ADDR_WIDTH-1:0] op1_base_addr_stored;
     reg [ADDR_WIDTH-1:0] op2_base_addr_stored;
     reg [ADDR_WIDTH-1:0] out_base_addr_stored;
@@ -61,7 +62,10 @@ module controller
                     end
                 end
                 `OPCODE_ADD: begin
-                    if (op1_addr < op1_base_addr_stored + DIMENSION) begin
+                    if (op1_addr == op1_base_addr_stored) begin
+                        op1_addr = op1_addr + 1;
+                        op2_addr = op2_addr + 1;
+                    end else if (op1_addr < op1_base_addr_stored + DIMENSION) begin
                         op1_addr = op1_addr + 1;
                         op2_addr = op2_addr + 1;
                         out_addr = out_addr + 1;
@@ -111,6 +115,7 @@ module controller
             op1_base_addr_stored = op1_base_addr;
             op2_base_addr_stored = op2_base_addr;
             out_base_addr_stored = out_base_addr;
+            noise_stored = noise;
             en = 0;
             done = 0;
             row = 0;
@@ -125,6 +130,7 @@ module controller
             op1_base_addr_stored = 0;
             op2_base_addr_stored = 0;
             out_base_addr_stored = 0;
+            noise_stored = 0;
             op_select = 0;
             en = 0;
             row = 0;
