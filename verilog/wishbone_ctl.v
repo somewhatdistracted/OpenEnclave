@@ -14,16 +14,16 @@ module wishbone_ctl #
     input [31:0] wbs_adr_i,
   
     // control input
-    input       output_ready,
     input [31:0] wishbone_output,
  
     // controller config enable
     output        config_en,    
 
     //control output
-    output        input_ready,
     output [31:0] wishbone_data,
-  
+    output        wb_read_req,
+    output        wb_write_req,
+
     // wishbone output
     output        wbs_ack_o,
     output [31:0] wbs_dat_o
@@ -47,7 +47,8 @@ module wishbone_ctl #
 // ==============================================================================
 // Latching
 // ==============================================================================
-    wire wbs_req_write = wbs_req & (wbs_we_i);
+    wire wbs_req_write = (!ack_o) & wbs_req & (wbs_we_i );
+    wire wbs_req_read  = (!ack_o) & wbs_req & (~wbs_we_i);
     // Input Data to Sram
     always@(posedge wb_clk_i) begin
         if (wb_rst_i)
@@ -59,7 +60,7 @@ module wishbone_ctl #
     always@(posedge wb_clk_i) begin
         if (wb_rst_i)
             wbs_reg_o <= 32'd0;
-        else if (output_ready)
+        else if (wbs_req_read)
             wbs_reg_o <= wishbone_output;
     end
 // ==============================================================================
@@ -70,7 +71,9 @@ assign config_en               = wbs_req & (wbs_adr_i == OPCODE_ADDR);
 assign wbs_ack_o               = ack_o;
 assign wbs_dat_o               = wbs_reg_o;
 
-assign input_ready             = wbs_req & (wbs_we_i);
 assign wishbone_data           = wbs_reg_i;
+
+assign wb_read_req             = wbs_req_read;
+assign wb_write_req            = wbs_req_write;
 
 endmodule

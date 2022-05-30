@@ -68,8 +68,8 @@ module top
 
     wire [31:0] wishbone_output;
     wire [31:0] wishbone_data;
-    wire wb_ready_i;
-    wire wb_ready_o;
+    wire wb_read_req;
+    wire wb_write_req;
    
     wire [1:0] opcode;
     wire config_en;
@@ -125,7 +125,6 @@ module top
     wire [CIPHERTEXT_WIDTH-1:0] mult_result;
 
     assign wisbone_output = out_rdata;
-    assign wb_ready_o = done;
 
     //Debug Prints
     always@(negedge clk) begin
@@ -133,8 +132,6 @@ module top
       $display("Wishbone In = %d", wbs_dat_i);
       $display("Wishbone Data = %d", wishbone_data);
       $display("Wishbone ADR = %d", wbs_adr_i);
-      $display("WB In EN = %d", wb_ready_i);
-      $display("WB O EN = %d", wb_ready_o);
       $display("Config = %d", config_en);
       $display("OPCODE = %d", opcode_out);
       $display("SRAM Write Data = %d", in_wdata);
@@ -169,20 +166,21 @@ module top
         .wbs_sel_i(wbs_sel_i),
         .wbs_dat_i(wbs_dat_i),
         .wbs_adr_i(wbs_adr_i),
-        .output_ready(wb_ready_o),
         .wishbone_output(wishbone_output),
         .config_en(config_en),
-        .input_ready(wb_ready_i),
         .wishbone_data(wishbone_data),
+        .wb_read_req(wb_read_req),
+        .wb_write_req(wb_write_req),
         .wbs_ack_o(wbs_ack_o),
         .wbs_dat_o(wbs_dat_o)        
     );
 
+    //Controller
     assign opcode = wishbone_data[1:0];
     assign op1_base_addr = wishbone_data[(2+ADDR_WIDTH)-1:2];
     assign op2_base_addr = wishbone_data[(2+(2*ADDR_WIDTH))-1:(2+ADDR_WIDTH)];
+    assign out_base_addr = wishbone_data[(2+(3*ADDR_WIDTH))-1:(2+(2*ADDR_WIDTH))];
 
-    // CONTROLLER
     controller #(
         .PLAINTEXT_MODULUS(PLAINTEXT_MODULUS),
         .PLAINTEXT_WIDTH(PLAINTEXT_WIDTH),
@@ -198,34 +196,35 @@ module top
         .config_en(config_en),
         .op1_base_addr(op1_base_addr),
         .op2_base_addr(op2_base_addr),
+        .out_base_addr(out_base_addr),
         .opcode_out(opcode_out),
         .op1_addr(op1_addr),
         .op2_addr(op2_addr),
+        .out_addr(out_addr),
         .op_select(op_select),
         .en(en),
         .done(done),
         .row(row)
     );
 
-    assign in_wen = wb_ready_i & ~config_en;
+    //SRAM
+    assign in_wen = wb_write_req;
     assign in_wadr = wbs_adr_i[ADDR_WIDTH:0];
     assign in_wdata = wishbone_data;
 
     assign out_wen = en;
-    assign out_wadr = OUTPUT_ADDR;
-    //assign out_wdata = (opcode_out == `OPCODE_ENCRYPT) ? ciphertext_result : ((opcode_out == `OPCODE_DECRYPT) ? decrypt_result : ((opcode_out == `OPCODE_ADD) ? add_result : mult_result));
-    assign out_wdata = add_result;
+    assign out_wadr = out_addr;
+    assign out_wdata = (opcode_out == `OPCODE_ENCRYPT) ? ciphertext_result : ((opcode_out == `OPCODE_DECRYPT) ? decrypt_result : ((opcode_out == `OPCODE_ADD) ? add_result : mult_result));
 
     assign op1_ren = en;
     assign op1_radr = op1_addr;
 
     assign op2_ren = en;
     assign op2_radr = op2_addr;
-    
-    assign out_ren = en;
-    assign out_radr = OUTPUT_ADDR;
 
-    // SRAM
+    assign out_ren = wb_read_req;
+    assign out_radr = wbs_adr_i[ADDR_WIDTH:0];
+
     sram #(
         .DATA_WIDTH(DATA_WIDTH),
         .ADDR_WIDTH(ADDR_WIDTH),
@@ -248,11 +247,6 @@ module top
         .out_radr(out_radr),
         .out_rdata(out_rdata)
     );
-    
-    // ADDRESS GENERATOR
-    
-    // I/O FIFOS
-
 
     assign encrypt_row = row;
 
