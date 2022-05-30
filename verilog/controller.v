@@ -102,7 +102,7 @@ module controller
             endcase
         end
 
-        if (!en && !done) begin
+        if (!en && !done && !config_en) begin
             en = 1;
         end
 
