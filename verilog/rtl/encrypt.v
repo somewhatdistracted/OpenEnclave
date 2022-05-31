@@ -3,9 +3,9 @@ module encrypt
     parameter PLAINTEXT_MODULUS = 64,
     parameter PLAINTEXT_WIDTH = 6,
     parameter CIPHERTEXT_MODULUS = 1024,
-    parameter CIPHERTEXT_WIDTH = 10,
-    parameter DIMENSION = 10,
-    parameter DIM_WIDTH = 4,
+    parameter CIPHERTEXT_WIDTH = 32,
+    parameter DIMENSION = 128,
+    parameter DIM_WIDTH = 7,
     parameter BIG_N = 30,
     parameter PARALLEL = 1
 )
@@ -33,7 +33,7 @@ module encrypt
         assign parallel2[0] = op2[0][CIPHERTEXT_WIDTH-1] ? 0 : op1[0];
         for (i = 1; i < PARALLEL; i+=1) begin
             assign parallel1[i] = parallel1[i-1] + op1[i][CIPHERTEXT_WIDTH-1] ? 0 : op1[i];
-            assign parallel2[i] = parallel2[i-1] + op2[i][CIPHERTEXT_WIDTH-1] ? 0 : op1[i];
+            assign parallel2[i] = parallel2[i-1] + op2[i][CIPHERTEXT_WIDTH-1] ? 0 : op2[i];
         end
     endgenerate
 
@@ -54,16 +54,16 @@ module encrypt
     end
 
     // reset array logic
-    //generate
-    //    genvar j;
-    //    for (j = 0; j <= DIMENSION; j += 1) begin
-    //        always @(posedge clk) begin
-    //            if (done || !rst_n) begin
-    //                last_row = 0;
-    //                psum[j] = 0;
-    //            end
-    //        end
-    //    end
-    //endgenerate
+    generate
+        genvar j;
+        for (j = 0; j <= DIMENSION; j += 1) begin
+            always @(posedge clk) begin
+                if (done || !rst_n) begin
+                    last_row = 0;
+                    psum[j] = 0;
+                end
+            end
+        end
+    endgenerate
 
 endmodule
