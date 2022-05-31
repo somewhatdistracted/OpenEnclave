@@ -12,7 +12,7 @@ module top
     parameter OPCODE_ADDR = 32'h30000000,
     parameter OUTPUT_ADDR = 32'h00000001,
     parameter DATA_WIDTH = 64,
-    parameter ADDR_WIDTH = 10,
+    parameter ADDR_WIDTH = 9,
     parameter DEPTH = 512,
     parameter DIM_WIDTH = 4,
     parameter USE_POWER_PINS = 0, 
@@ -272,8 +272,10 @@ module top
     ) encrypt_inst (
         .clk(clk),
         .rst_n(rst_n),
-        .plaintext_and_noise(plaintext_and_noise),
-        .publickey_entry(publickey_entry),
+        .en(en),
+        .done(done),
+        .op1(plaintext_and_noise),
+        .op2(publickey_entry),
         .row(encrypt_row),
         .ciphertext(ciphertext_result)
     );
