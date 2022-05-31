@@ -1,7 +1,13 @@
+// CONSTANTS and DEFINITIONS for OpenEnclave
+`define OPCODE_ENCRYPT  2'b00
+`define OPCODE_DECRYPT  2'b01
+`define OPCODE_ADD      2'b10
+`define OPCODE_MULT     2'b11
+
 //`default_nettype none
 `define MPRJ_IO_PADS 38
 
-module top
+module user_proj_enclave
 #(
     parameter PLAINTEXT_MODULUS = 64,
     parameter PLAINTEXT_WIDTH = 6,
@@ -15,7 +21,6 @@ module top
     parameter ADDR_WIDTH = 10,
     parameter DEPTH = 512,
     parameter DIM_WIDTH = 4,
-    parameter USE_POWER_PINS = 0, 
     parameter ENABLE_FULL_IO = 0  
 )
 (
@@ -23,6 +28,18 @@ module top
     inout vccd1,
     inout vssd1,
   `endif
+
+    //Wishbone
+    input wire       wb_clk_i,
+    input wire       wb_rst_i,
+    input wire       wbs_stb_i,
+    input wire       wbs_cyc_i,
+    input wire       wbs_we_i,
+    input wire [3:0]  wbs_sel_i,
+    input wire [31:0] wbs_dat_i,
+    input wire [31:0] wbs_adr_i,
+    output wire        wbs_ack_o,
+    output wire [31:0] wbs_dat_o,
 
     // Logic Analyzer
     // [0] -> gpio (1) / wishbone (0) select
@@ -36,34 +53,13 @@ module top
     output wire [`MPRJ_IO_PADS-1:0] io_out,
     output wire [`MPRJ_IO_PADS-1:0] io_oeb,
 
-    // Analog (direct connection to GPIO pad---use with caution)
-    // Note that analog I/O is not available on the 7 lowest-numbered
-    // GPIO pads, and so the analog_io indexing is offset from the
-    // GPIO indexing by 7 (also upper 2 GPIOs do not have analog_io).
-    inout wire [`MPRJ_IO_PADS-10:0] analog_io,
-
-    // Independent clock (on independent integer divider)
-    input wire user_clock2,
-
     // User maskable interrupt signals
-    output wire [2:0] user_irq,
-
-    //Wishbone
-    input wire       wb_clk_i,
-    input wire       wb_rst_i,
-    input wire       wbs_stb_i,
-    input wire       wbs_cyc_i,
-    input wire       wbs_we_i,
-    input wire [3:0]  wbs_sel_i,
-    input wire [31:0] wbs_dat_i,
-    input wire [31:0] wbs_adr_i,
-    output wire        wbs_ack_o,
-    output wire [31:0] wbs_dat_o
+    output wire [2:0] irq
 );  
     wire clk;
     wire rst_n;
 
-    assign clk = (la_oenb[0] & la_data_in[0]) ? user_clock2 : wb_clk_i;
+    assign clk = (la_oenb[0] & la_data_in[0]) ? la_data_in[64] : wb_clk_i;
     assign rst_n = la_oenb[1] ? la_data_in[1] : 1;
 
     wire [31:0] wishbone_output;
@@ -131,7 +127,7 @@ module top
 
     //Debug Prints
     always@(posedge clk) begin
-    /*  $display("Chip Output = %d", wbs_dat_o);
+      $display("Chip Output = %d", wbs_dat_o);
       $display("Wishbone In = %d", wbs_dat_i);
       $display("Wishbone Data = %d", wishbone_data);
       $display("Wishbone ADR = %d", wbs_adr_i);
@@ -155,8 +151,8 @@ module top
       $display("En = %d", en);
       $display("Done = %d", done);
 
-    */  $display(" ");
-    end 
+      $display(" ");
+    end
 
     // WISHBONE
     wishbone_ctl #(
