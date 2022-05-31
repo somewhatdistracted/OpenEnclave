@@ -7,7 +7,8 @@ module controller
     parameter DIMENSION = 10,
     parameter BIG_N = 30,
     parameter DIM_WIDTH = 4,
-    parameter ADDR_WIDTH = 10
+    parameter ADDR_WIDTH = 10,
+    parameter PARALLEL = 1
 )
 (
     input clk,
@@ -34,6 +35,7 @@ module controller
     reg [ADDR_WIDTH-1:0] op1_base_addr_stored;
     reg [ADDR_WIDTH-1:0] op2_base_addr_stored;
     reg [ADDR_WIDTH-1:0] out_base_addr_stored;
+    reg [DIM_WIDTH-1:0] col; // counter for encrypt
 
     always @(posedge clk) begin
 
@@ -41,10 +43,21 @@ module controller
         if (en) begin
             case (opcode_out)
                 `OPCODE_ENCRYPT: begin
-                    if (op1_addr <= op1_base_addr_stored + DIMENSION) begin
+                    if (col == BIG_N && row == DIMENSION) begin
+                        en = 0;
+                        done = 1;
+                        row = 0;
+                        col = 0;
+                    end else if (col < BIG_N) begin
                         op1_addr = op1_addr + 1;
                         op2_addr = op2_addr + 1;
+                        col = col + 1;
+                    end else if (col == BIG_N) begin
+                        op1_addr = op1_addr + 1;
+                        op2_addr = op2_addr + 1;
+                        out_addr = out_addr + 1;
                         row = row + 1;
+                        col = 0;
                     end else begin
                         en = 0;
                         done = 1;
@@ -119,6 +132,7 @@ module controller
             en = 0;
             done = 0;
             row = 0;
+            col = 0;
         end
 
         // highest priority: reset
@@ -134,6 +148,7 @@ module controller
             op_select = 0;
             en = 0;
             row = 0;
+            col = 0;
         end
     end
 

@@ -12,9 +12,10 @@ module top
     parameter OPCODE_ADDR = 32'h30000000,
     parameter OUTPUT_ADDR = 32'h00000001,
     parameter DATA_WIDTH = 64,
-    parameter ADDR_WIDTH = 10,
+    parameter ADDR_WIDTH = 9,
     parameter DEPTH = 512,
     parameter DIM_WIDTH = 4,
+    parameter PARALLEL = 1,
     parameter USE_POWER_PINS = 0, 
     parameter ENABLE_FULL_IO = 0  
 )
@@ -106,8 +107,8 @@ module top
     wire [ADDR_WIDTH - 1 : 0] out_radr;
     wire [DATA_WIDTH - 1 : 0] out_rdata;
 
-    wire [CIPHERTEXT_WIDTH-1:0] plaintext_and_noise;
-    wire [CIPHERTEXT_WIDTH-1:0] publickey_entry;
+    wire [CIPHERTEXT_WIDTH-1:0] plaintext_and_noise [PARALLEL-1:0];
+    wire [CIPHERTEXT_WIDTH-1:0] publickey_entry [PARALLEL-1:0];
     wire [BIG_N-1:0] noise_select;
     wire [DIM_WIDTH-1:0] encrypt_row;
     wire [CIPHERTEXT_WIDTH-1:0] ciphertext_result;
@@ -202,6 +203,7 @@ module top
         .op1_base_addr(op1_base_addr),
         .op2_base_addr(op2_base_addr),
         .out_base_addr(out_base_addr),
+        .noise(noise_select),
         .opcode_out(opcode_out),
         .op1_addr(op1_addr),
         .op2_addr(op2_addr),
@@ -255,8 +257,8 @@ module top
 
     assign encrypt_row = row;
 
-    assign plaintext_and_noise = op1_rdata;
-    assign publickey_entry = op2_rdata;
+    assign plaintext_and_noise[0] = op1_rdata;
+    assign publickey_entry[0] = op2_rdata;
     assign noise_select = 42;
     
     // ENCRYPT
@@ -271,8 +273,10 @@ module top
     ) encrypt_inst (
         .clk(clk),
         .rst_n(rst_n),
-        .plaintext_and_noise(plaintext_and_noise),
-        .publickey_entry(publickey_entry),
+        .en(en),
+        .done(done),
+        .op1(plaintext_and_noise),
+        .op2(publickey_entry),
         .row(encrypt_row),
         .ciphertext(ciphertext_result)
     );
