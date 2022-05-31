@@ -11,7 +11,7 @@ module homomorphic_multiply
     input clk,
     input rst_n,
     
-    input signed [CIPHERTEXT_WIDTH-1:0] ciphertext_entry,
+    input [CIPHERTEXT_WIDTH-1:0] ciphertext_entry,
     input [DIMENSION:0] row,
     input ciphertext_select,
     input en,
@@ -37,7 +37,7 @@ module homomorphic_multiply
         if (ciphertext_select == 1 && en) begin
             // second ciphertext
             for (i = 0; i <= DIMENSION; i=i+1) begin
-                interim_result[row + i] = interim_result[row + i] + ciphertext_entry * ciphertext1[i];
+                interim_result[row + i] <= interim_result[row + i] + ciphertext_entry * ciphertext1[i];
             end
         end
 
