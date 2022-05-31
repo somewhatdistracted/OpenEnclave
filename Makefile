@@ -5,10 +5,10 @@ run: compile
 	./simv
 
 concat: clean
-	cat verilog/defs.v verilog/top.v verilog/sram.v verilog/wishbone_ctl.v verilog/controller.v verilog/encrypt.v verilog/decrypt.v verilog/homomorphic_add.v verilog/homomorphic_multiply.v > verilog/outputs/design.v
+	cat verilog/rtl/defs.v verilog/rtl/top.v verilog/rtl/sram.v verilog/rtl/wishbone_ctl.v verilog/rtl/controller.v verilog/rtl/encrypt.v verilog/rtl/decrypt.v verilog/rtl/homomorphic_add.v verilog/rtl/homomorphic_multiply.v > verilog/outputs/design.v
 
 compile: concat
-	vcs -full64 -sverilog -timescale=1ns/1ps -debug_access+pp verilog/$(target).v verilog/sky130_sram_1kbyte_1rw1r_32x256_8.v verilog/outputs/design.v 
+	vcs -full64 -sverilog -timescale=1ns/1ps -debug_access+pp verilog/dv/$(target).v verilog/sram/sky130_sram_1kbyte_1rw1r_32x256_8.v verilog/outputs/design.v 
 	
 copy_verilog: concat
 	cp verilog/outputs/design.v skywater-digital-flow/OpenEnclave/design/rtl/design.v
