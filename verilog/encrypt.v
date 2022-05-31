@@ -44,7 +44,7 @@ module encrypt
         end
 
         if (row != last_row) begin
-            ciphertext = psum[row-1];
+            ciphertext = psum[row];
         end
         last_row = row;
 
@@ -54,16 +54,15 @@ module encrypt
     end
 
     // reset array logic
-    //generate
-    //    genvar j;
-    //    for (j = 0; j <= DIMENSION; j += 1) begin
-    //        always @(posedge clk) begin
-    //            if (done || !rst_n) begin
-    //                last_row = 0;
-    //                psum[j] = 0;
-    //            end
-    //        end
-    //    end
-    //endgenerate
-
+    generate
+        genvar j;
+        for (j = 0; j <= DIMENSION; j += 1) begin
+            always @(posedge clk) begin
+                if (done || !rst_n) begin
+                    last_row = 0;
+                    psum[j] = 0;
+                end
+            end
+        end
+    endgenerate
 endmodule

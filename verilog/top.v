@@ -143,7 +143,7 @@ module top
       $display("SRAM OW Data = %d", out_wdata);
       $display("SRAM OW ADDR = %d", out_wadr);
       $display("SRAM OR Data = %d", out_rdata);
-      $display("SRAM O Adr = %d", out_radr);
+      $display("SRAM O Adr = %d", out_radr);*/
       $display("Op Data 1 = %d", op1_rdata);
       $display("Op Data 2 = %d", op2_rdata);
       $display("Op Adr 1 = %d", op1_radr);
@@ -156,7 +156,7 @@ module top
       $display("En = %d", en);
       $display("Done = %d", done);
 
-    */  $display(" ");
+    /**/  $display(" ");
     end 
 
     // WISHBONE
@@ -326,7 +326,7 @@ module top
     assign mult_en = en & (opcode_out == `OPCODE_MULT);
     assign ciphertext_select = op_select;
 
-    assign ciphertext_entry = op1_rdata;     
+    assign ciphertext_entry = (op_select == 0) ? op1_rdata : op2_rdata;
 
     // MULT
     homomorphic_multiply #(
