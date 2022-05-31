@@ -39,29 +39,31 @@ module encrypt
 
     // main logic
     always @(posedge clk) begin
-        psum[row] = psum[row] + parallel1[PARALLEL-1] + parallel2[PARALLEL-1];
+        if (!done && rst_n) begin
+            psum[row] = psum[row] + parallel1[PARALLEL-1] + parallel2[PARALLEL-1];
+        end
+
         if (row != last_row) begin
             ciphertext = psum[row-1];
         end
         last_row = row;
 
         if (!rst_n) begin
-            last_row = 0;
             ciphertext = 0;
         end
     end
 
     // reset array logic
-    generate
-        genvar j;
-        for (j = 0; j <= DIMENSION; j += 1) begin
-            always @(posedge clk) begin
-                if (done || !rst_n) begin
-                    last_row = 0;
-                    psum[j] = 0;
-                end
-            end
-        end
-    endgenerate
+    //generate
+    //    genvar j;
+    //    for (j = 0; j <= DIMENSION; j += 1) begin
+    //        always @(posedge clk) begin
+    //            if (done || !rst_n) begin
+    //                last_row = 0;
+    //                psum[j] = 0;
+    //            end
+    //        end
+    //    end
+    //endgenerate
 
 endmodule
