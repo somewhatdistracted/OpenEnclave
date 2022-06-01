@@ -14,7 +14,6 @@
 //`default_nettype none
 `define MPRJ_IO_PADS 38
 
-
 module top_tb;
 
   reg [127:0] la_data_in;
@@ -237,12 +236,9 @@ module top_tb;
   
   end
 
-  initial begin
-    $vcdplusfile("dump.vcd");
-    $vcdplusmemon();
-    $vcdpluson(0, top_tb);
-    #2000;
-    $finish(2);
+  initial begin    
+    $dumpfile("dump.vcd");
+    $dumpvars(0, top_tb);
   end
 
 endmodule  

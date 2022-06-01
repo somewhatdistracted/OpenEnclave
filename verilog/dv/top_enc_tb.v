@@ -3,7 +3,7 @@
 `define CIPHERTEXT_MODULUS 1024
 `define CIPHERTEXT_WIDTH   10
 `define DIMENSION          2
-`define BIG_N              2
+`define BIG_N              3
 `define OPCODE_ADDR        32'h30000000
 `define OUTPUT_ADDR        32'h10000000
 `define DATA_WIDTH         128
@@ -104,9 +104,17 @@ module top_tb;
     wbs_we_i = 1;
     
     wbs_adr_i = 0;
-    wbs_dat_i = 32'd10;
+    wbs_dat_i = 32'd1;
 
-    #100
+    #60
+    wbs_stb_i = 0;
+    wbs_cyc_i = 0;
+    wbs_sel_i = 4'b0000;
+    wb_rst_i = 0;
+
+    wbs_we_i = 0;
+    #40
+
     wbs_stb_i = 1;
     wbs_cyc_i = 1;
     wbs_sel_i = 4'b1111;
@@ -115,9 +123,16 @@ module top_tb;
     wbs_we_i = 1;
 
     wbs_adr_i = 100;
-    wbs_dat_i = 32'd20;
+    wbs_dat_i = 32'd2;
 
-    #100 
+    #60
+    wbs_stb_i = 0;
+    wbs_cyc_i = 0;
+    wbs_sel_i = 4'b0000;
+    wb_rst_i = 0;
+
+    wbs_we_i = 0;
+    #40
     
     wbs_stb_i = 1;
     wbs_cyc_i = 1;
@@ -127,9 +142,16 @@ module top_tb;
     wbs_we_i = 1;
 
     wbs_adr_i = 1;
-    wbs_dat_i = 32'd15;
+    wbs_dat_i = 32'd0;
 
-    #100
+    #60
+    wbs_stb_i = 0;
+    wbs_cyc_i = 0;
+    wbs_sel_i = 4'b0000;
+    wb_rst_i = 0;
+
+    wbs_we_i = 0;
+    #40
     wbs_stb_i = 1;
     wbs_cyc_i = 1;
     wbs_sel_i = 4'b1111;
@@ -138,9 +160,16 @@ module top_tb;
     wbs_we_i = 1;
 
     wbs_adr_i = 101;
-    wbs_dat_i = 32'd25;
+    wbs_dat_i = 32'd3;
 
-    #100
+    #60
+    wbs_stb_i = 0;
+    wbs_cyc_i = 0;
+    wbs_sel_i = 4'b0000;
+    wb_rst_i = 0;
+
+    wbs_we_i = 0;
+    #40
 
     wbs_stb_i = 1;
     wbs_cyc_i = 1;
@@ -150,9 +179,16 @@ module top_tb;
     wbs_we_i = 1;
 
     wbs_adr_i = 2;
-    wbs_dat_i = 32'd20;
+    wbs_dat_i = 32'd0;
 
-    #100
+    #60
+    wbs_stb_i = 0;
+    wbs_cyc_i = 0;
+    wbs_sel_i = 4'b0000;
+    wb_rst_i = 0;
+
+    wbs_we_i = 0;
+    #40
     wbs_stb_i = 1;
     wbs_cyc_i = 1;
     wbs_sel_i = 4'b1111;
@@ -161,15 +197,122 @@ module top_tb;
     wbs_we_i = 1;
 
     wbs_adr_i = 102;
-    wbs_dat_i = 32'd30;
+    wbs_dat_i = 32'd4;
 
-    #100
+    #60
+    wbs_stb_i = 0;
+    wbs_cyc_i = 0;
+    wbs_sel_i = 4'b0000;
+    wb_rst_i = 0;
+
+    wbs_we_i = 0;
+    #40
+
+    wbs_stb_i = 1;
+    wbs_cyc_i = 1;
+    wbs_sel_i = 4'b1111;
+    wb_rst_i = 0;
+
+    wbs_we_i = 1;
+
+    wbs_adr_i = 3;
+    wbs_dat_i = 32'd0;
+
+    #60
+    wbs_stb_i = 0;
+    wbs_cyc_i = 0;
+    wbs_sel_i = 4'b0000;
+    wb_rst_i = 0;
+
+    wbs_we_i = 0;
+    #40
+    wbs_stb_i = 1;
+    wbs_cyc_i = 1;
+    wbs_sel_i = 4'b1111;
+    wb_rst_i = 0;
+
+    wbs_we_i = 1;
+
+    wbs_adr_i = 103;
+    wbs_dat_i = 32'd4;
+    #60
+    wbs_stb_i = 0;
+    wbs_cyc_i = 0;
+    wbs_sel_i = 4'b0000;
+    wb_rst_i = 0;
+
+    wbs_we_i = 0;
+    #40
+
+    wbs_stb_i = 1;
+    wbs_cyc_i = 1;
+    wbs_sel_i = 4'b1111;
+    wb_rst_i = 0;
+
+    wbs_we_i = 1;
+
+    wbs_adr_i = 4;
+    wbs_dat_i = 32'd0;
+
+    #60
+    wbs_stb_i = 0;
+    wbs_cyc_i = 0;
+    wbs_sel_i = 4'b0000;
+    wb_rst_i = 0;
+
+    wbs_we_i = 0;
+    #40
+    wbs_stb_i = 1;
+    wbs_cyc_i = 1;
+    wbs_sel_i = 4'b1111;
+    wb_rst_i = 0;
+
+    wbs_we_i = 1;
+
+    wbs_adr_i = 104;
+    wbs_dat_i = 32'd4;
+    #60
+    wbs_stb_i = 0;
+    wbs_cyc_i = 0;
+    wbs_sel_i = 4'b0000;
+    wb_rst_i = 0;
+
+    wbs_we_i = 0;
+    #40
+
+    wbs_stb_i = 1;
+    wbs_cyc_i = 1;
+    wbs_sel_i = 4'b1111;
+    wb_rst_i = 0;
+
+    wbs_we_i = 1;
+
+    wbs_adr_i = 5;
+    wbs_dat_i = 32'd0;
+
+    #60
+    wbs_stb_i = 0;
+    wbs_cyc_i = 0;
+    wbs_sel_i = 4'b0000;
+    wb_rst_i = 0;
+
+    wbs_we_i = 0;
+    #40
+    wbs_stb_i = 1;
+    wbs_cyc_i = 1;
+    wbs_sel_i = 4'b1111;
+    wb_rst_i = 0;
+
+    wbs_we_i = 1;
+
+    wbs_adr_i = 105;
+    wbs_dat_i = 32'd4;
+    
     
     // LOAD INSTRUCTION
     wbs_we_i = 1;
     wbs_stb_i = 1;
     wbs_cyc_i = 1;
-
     wbs_adr_i = `OPCODE_ADDR;
 
     wbs_dat_i = 0;
@@ -178,7 +321,15 @@ module top_tb;
     wbs_dat_i[(2+(2*`ADDR_WIDTH))-1:(2+`ADDR_WIDTH)] = 100;    
     wbs_dat_i[(2+(3*`ADDR_WIDTH))-1:(2+(2*`ADDR_WIDTH))] = 50;
 
-    #100
+    #60
+    wbs_stb_i = 0;
+    wbs_cyc_i = 0;
+    wbs_sel_i = 4'b0000;
+    wb_rst_i = 0;
+
+    wbs_we_i = 0;
+    #40
+
     // READ OUT
     wbs_we_i = 0;
     wbs_stb_i = 0;
@@ -195,7 +346,7 @@ module top_tb;
     $display("Result = %d", wbs_dat_o);
     #20
     $display("Result = %d", wbs_dat_o);
-    #20
+    #200
 
     #20
     //read out
@@ -239,11 +390,8 @@ module top_tb;
   end
 
   initial begin
-    $vcdplusfile("dump.vcd");
-    $vcdplusmemon();
-    $vcdpluson(0, top_tb);
-    #2000;
-    $finish(2);
+    $dumpfile("dump_enc.vcd");
+    $dumpvars(0, top);
   end
 
 endmodule  

@@ -61,19 +61,19 @@ module wishbone_ctl #
 	    wbs_reg_i <= wbs_dat_i;
     end
     // Sram to Output Data
-    //always@(posedge wb_clk_i) begin
-    //    if (wb_rst_i)
-    //        wbs_reg_o <= 32'd0;
-    //    else if (wbs_req_read)
-    //        wbs_reg_o <= wishbone_output;
-    //end
+    always@(negedge wb_clk_i) begin
+        if (wb_rst_i)
+            wbs_reg_o <= 32'd0;
+        else if (wbs_req_read)
+            wbs_reg_o <= wishbone_output;
+    end
 // ==============================================================================
 // Outputs
 // ==============================================================================
 assign config_en               = wbs_req & (wbs_adr_i == OPCODE_ADDR);
 
 assign wbs_ack_o               = ack_o;
-assign wbs_dat_o               = wishbone_output;
+assign wbs_dat_o               = wbs_req_read ? wishbone_output : 32'd0;
 
 assign wishbone_data           = wbs_reg_i;
 assign wishbone_addr           = wbs_reg_addr;

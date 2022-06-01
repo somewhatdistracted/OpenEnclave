@@ -43,7 +43,6 @@ module encrypt
             psum[row] <= psum[row] + parallel1[PARALLEL-1] + parallel2[PARALLEL-1];
         end
 
-
         // set output
         if (!rst_n) begin
             ciphertext = 0;
@@ -66,6 +65,4 @@ module encrypt
             end
         end
     endgenerate
-    
-
 endmodule

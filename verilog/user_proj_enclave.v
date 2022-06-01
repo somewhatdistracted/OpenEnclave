@@ -1,7 +1,13 @@
+// CONSTANTS and DEFINITIONS for OpenEnclave
+`define OPCODE_ENCRYPT  2'b00
+`define OPCODE_DECRYPT  2'b01
+`define OPCODE_ADD      2'b10
+`define OPCODE_MULT     2'b11
+
 //`default_nettype none
 `define MPRJ_IO_PADS 38
 
-module top
+module user_proj_enclave
 #(
     parameter PLAINTEXT_MODULUS = 64,
     parameter PLAINTEXT_WIDTH = 6,
@@ -12,11 +18,9 @@ module top
     parameter OPCODE_ADDR = 32'h30000000,
     parameter OUTPUT_ADDR = 32'h00000001,
     parameter DATA_WIDTH = 64,
-    parameter ADDR_WIDTH = 9,
+    parameter ADDR_WIDTH = 10,
     parameter DEPTH = 512,
     parameter DIM_WIDTH = 4,
-    parameter PARALLEL = 1,
-    parameter USE_POWER_PINS = 0, 
     parameter ENABLE_FULL_IO = 0  
 )
 (
@@ -24,6 +28,18 @@ module top
     inout vccd1,
     inout vssd1,
   `endif
+
+    //Wishbone
+    input wire       wb_clk_i,
+    input wire       wb_rst_i,
+    input wire       wbs_stb_i,
+    input wire       wbs_cyc_i,
+    input wire       wbs_we_i,
+    input wire [3:0]  wbs_sel_i,
+    input wire [31:0] wbs_dat_i,
+    input wire [31:0] wbs_adr_i,
+    output wire        wbs_ack_o,
+    output wire [31:0] wbs_dat_o,
 
     // Logic Analyzer
     // [0] -> gpio (1) / wishbone (0) select
@@ -37,34 +53,13 @@ module top
     output wire [`MPRJ_IO_PADS-1:0] io_out,
     output wire [`MPRJ_IO_PADS-1:0] io_oeb,
 
-    // Analog (direct connection to GPIO pad---use with caution)
-    // Note that analog I/O is not available on the 7 lowest-numbered
-    // GPIO pads, and so the analog_io indexing is offset from the
-    // GPIO indexing by 7 (also upper 2 GPIOs do not have analog_io).
-    inout wire [`MPRJ_IO_PADS-10:0] analog_io,
-
-    // Independent clock (on independent integer divider)
-    input wire user_clock2,
-
     // User maskable interrupt signals
-    output wire [2:0] user_irq,
-
-    //Wishbone
-    input wire       wb_clk_i,
-    input wire       wb_rst_i,
-    input wire       wbs_stb_i,
-    input wire       wbs_cyc_i,
-    input wire       wbs_we_i,
-    input wire [3:0]  wbs_sel_i,
-    input wire [31:0] wbs_dat_i,
-    input wire [31:0] wbs_adr_i,
-    output wire        wbs_ack_o,
-    output wire [31:0] wbs_dat_o
+    output wire [2:0] irq
 );  
     wire clk;
     wire rst_n;
 
-    assign clk = (la_oenb[0] & la_data_in[0]) ? user_clock2 : wb_clk_i;
+    assign clk = (la_oenb[0] & la_data_in[0]) ? la_data_in[64] : wb_clk_i;
     assign rst_n = la_oenb[1] ? la_data_in[1] : 1;
 
     wire [31:0] wishbone_output;
@@ -107,8 +102,8 @@ module top
     wire [ADDR_WIDTH - 1 : 0] out_radr;
     wire [DATA_WIDTH - 1 : 0] out_rdata;
 
-    wire [CIPHERTEXT_WIDTH-1:0] plaintext_and_noise [PARALLEL-1:0];
-    wire [CIPHERTEXT_WIDTH-1:0] publickey_entry [PARALLEL-1:0];
+    wire [CIPHERTEXT_WIDTH-1:0] plaintext_and_noise;
+    wire [CIPHERTEXT_WIDTH-1:0] publickey_entry;
     wire [BIG_N-1:0] noise_select;
     wire [DIM_WIDTH-1:0] encrypt_row;
     wire [CIPHERTEXT_WIDTH-1:0] ciphertext_result;
@@ -132,7 +127,7 @@ module top
 
     //Debug Prints
     always@(posedge clk) begin
-    /*  $display("Chip Output = %d", wbs_dat_o);
+      $display("Chip Output = %d", wbs_dat_o);
       $display("Wishbone In = %d", wbs_dat_i);
       $display("Wishbone Data = %d", wishbone_data);
       $display("Wishbone ADR = %d", wbs_adr_i);
@@ -143,7 +138,7 @@ module top
       $display("SRAM OW Data = %d", out_wdata);
       $display("SRAM OW ADDR = %d", out_wadr);
       $display("SRAM OR Data = %d", out_rdata);
-      $display("SRAM O Adr = %d", out_radr);*/
+      $display("SRAM O Adr = %d", out_radr);
       $display("Op Data 1 = %d", op1_rdata);
       $display("Op Data 2 = %d", op2_rdata);
       $display("Op Adr 1 = %d", op1_radr);
@@ -156,8 +151,8 @@ module top
       $display("En = %d", en);
       $display("Done = %d", done);
 
-    /**/  $display(" ");
-    end 
+      $display(" ");
+    end
 
     // WISHBONE
     wishbone_ctl #(
@@ -203,7 +198,6 @@ module top
         .op1_base_addr(op1_base_addr),
         .op2_base_addr(op2_base_addr),
         .out_base_addr(out_base_addr),
-        .noise(noise_select),
         .opcode_out(opcode_out),
         .op1_addr(op1_addr),
         .op2_addr(op2_addr),
@@ -257,8 +251,8 @@ module top
 
     assign encrypt_row = row;
 
-    assign plaintext_and_noise[0] = op1_rdata;
-    assign publickey_entry[0] = op2_rdata;
+    assign plaintext_and_noise = op1_rdata;
+    assign publickey_entry = op2_rdata;
     assign noise_select = 42;
     
     // ENCRYPT
@@ -273,10 +267,8 @@ module top
     ) encrypt_inst (
         .clk(clk),
         .rst_n(rst_n),
-        .en(en),
-        .done(done),
-        .op1(plaintext_and_noise),
-        .op2(publickey_entry),
+        .plaintext_and_noise(plaintext_and_noise),
+        .publickey_entry(publickey_entry),
         .row(encrypt_row),
         .ciphertext(ciphertext_result)
     );
@@ -326,7 +318,7 @@ module top
     assign mult_en = en & (opcode_out == `OPCODE_MULT);
     assign ciphertext_select = op_select;
 
-    assign ciphertext_entry = (op_select == 0) ? op1_rdata : op2_rdata;
+    assign ciphertext_entry = op1_rdata;     
 
     // MULT
     homomorphic_multiply #(
