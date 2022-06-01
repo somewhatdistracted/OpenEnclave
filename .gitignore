@@ -51,7 +51,12 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
+# Jupyter/MacOS/Verilog
 .DS_Store
 .ipynb_checkpoints
 *.swp
 venv/
+simv
+ucli.key
+simv.daidir
+csrc
