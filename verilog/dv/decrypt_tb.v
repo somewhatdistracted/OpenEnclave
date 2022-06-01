@@ -1,18 +1,20 @@
 `define PLAINTEXT_MODULUS 64 
-`define PLAINTEXT_WIDTH 6
-`define DIMENSION 1
+`define PLAINTEXT_WIDTH 8
+`define DIMENSION 3
 `define CIPHERTEXT_MODULUS 1024
-`define CIPHERTEXT_WIDTH 10 
-`define BIG_N 30 
+`define CIPHERTEXT_WIDTH 16 
+`define BIG_N 30
+`define PARALLEL 2
 
 module decrypt_tb;
 
     reg clk;
     reg rst_n;
+    reg en;
     reg [`CIPHERTEXT_WIDTH-1:0] secret_key [`DIMENSION:0];
-    reg signed [`CIPHERTEXT_WIDTH-1:0] cipher_text [`DIMENSION:0];
-    reg [`CIPHERTEXT_WIDTH-1:0] skentry;
-    reg signed [`CIPHERTEXT_WIDTH-1:0] ctentry;
+    reg [`CIPHERTEXT_WIDTH-1:0] cipher_text [`DIMENSION:0];
+    reg [`CIPHERTEXT_WIDTH-1:0] skentry [`PARALLEL-1:0];
+    reg [`CIPHERTEXT_WIDTH-1:0] ctentry [`PARALLEL-1:0];
     reg [`DIMENSION:0] row;
     wire [`PLAINTEXT_WIDTH-1:0] result;
     reg [`PLAINTEXT_WIDTH-1:0] expected;
@@ -25,10 +27,12 @@ module decrypt_tb;
         .CIPHERTEXT_MODULUS(`CIPHERTEXT_MODULUS),
         .CIPHERTEXT_WIDTH(`CIPHERTEXT_WIDTH),
         .DIMENSION(`DIMENSION),
-	.BIG_N(`BIG_N)
+        .PARALLEL(`PARALLEL),
+	    .BIG_N(`BIG_N)
     ) decrypt_inst (
         .clk(clk),
         .rst_n(rst_n),
+        .en(en),
         .secretkey_entry(skentry),
         .ciphertext_entry(ctentry),
 	.row(row),
@@ -36,35 +40,42 @@ module decrypt_tb;
     );
 
     initial begin
-	clk = 0;
+	    clk = 0;
         rst_n = 0;
+        en = 0;
 
-        #200;
+        #20;
         rst_n = 1;
-        #200;
-
+        #20;
+        
+        en = 1;
     	secret_key[0] = `CIPHERTEXT_WIDTH'd1; // fill with value
-    	secret_key[1] = `CIPHERTEXT_WIDTH'd173; // fill with value
-    	cipher_text[0] = `CIPHERTEXT_WIDTH'd895; // fill
-    	cipher_text[1] = `CIPHERTEXT_WIDTH'd894; // fill
+    	secret_key[1] = `CIPHERTEXT_WIDTH'd12; // fill with value
+    	secret_key[2] = `CIPHERTEXT_WIDTH'd5; // fill with value
+    	secret_key[3] = `CIPHERTEXT_WIDTH'd2; // fill with value
+    	cipher_text[0] = `CIPHERTEXT_WIDTH'd9; // fill
+    	cipher_text[1] = `CIPHERTEXT_WIDTH'd3; // fill
+    	cipher_text[2] = `CIPHERTEXT_WIDTH'd4; // fill
+    	cipher_text[3] = `CIPHERTEXT_WIDTH'd8; // fill
 
-	row = 0;
-	skentry = secret_key[0];
-	ctentry = cipher_text[0];
-	#20;
+        row = 0;
+        skentry = secret_key[1:0];
+        ctentry = cipher_text[1:0];
+        #20;
 
-	row = 1;
-	skentry = secret_key[1];
-	ctentry = cipher_text[1];
-	#20;
+        row = 1;
+        skentry = secret_key[3:2];
+        ctentry = cipher_text[3:2];
+        #20;
 
-	expected = 37;
-	$display("Result = %d", result); assert(result == expected);
+        expected = 81;
+        $display("Result = %d", result); assert(result == expected);
 
-	#200;
+        #200;
         rst_n = 1;
         #200;
 
+        /*
         secret_key[0] = `CIPHERTEXT_WIDTH'd1; // fill with value
         secret_key[1] = `CIPHERTEXT_WIDTH'd157; // fill with value
         cipher_text[0] = `CIPHERTEXT_WIDTH'd600; // fill
@@ -122,8 +133,10 @@ module decrypt_tb;
 
         expected = 3;
         $display("Result = %d", result); assert(result == expected);
+        */
 
-	$finish;
+        #200;
+	    $finish;
     end
 
 endmodule

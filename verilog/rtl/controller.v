@@ -19,7 +19,6 @@ module controller
     input [ADDR_WIDTH-1:0] op1_base_addr,
     input [ADDR_WIDTH-1:0] op2_base_addr,
     input [ADDR_WIDTH-1:0] out_base_addr,
-    input [BIG_N-1:0] noise,
     
 
     output reg [1:0] opcode_out,
@@ -31,7 +30,6 @@ module controller
     output reg done,
     output reg [DIM_WIDTH-1:0] row
 );
-    reg [BIG_N-1:0] noise_stored;
     reg [ADDR_WIDTH-1:0] op1_base_addr_stored;
     reg [ADDR_WIDTH-1:0] op2_base_addr_stored;
     reg [ADDR_WIDTH-1:0] out_base_addr_stored;
@@ -43,26 +41,30 @@ module controller
         if (en) begin
             case (opcode_out)
                 `OPCODE_ENCRYPT: begin
-                    if (col == BIG_N && row == DIMENSION) begin
+                    // if just reset col and isn't first row
+                    if (row != 0 && col == 0) begin
+                        out_addr = out_addr + 1;
+                    end
+                    
+                    if (col >= BIG_N && row == DIMENSION) begin
                         en = 0;
                         done = 1;
                         row = 0;
                         col = 0;
+                        out_addr = out_addr + 1;
                     end else if (col < BIG_N) begin
                         op1_addr = op1_addr + 1;
                         op2_addr = op2_addr + 1;
-                        col = col + 1;
-                    end else if (col == BIG_N) begin
+                        col = col + PARALLEL;
+                    end else if (col >= BIG_N) begin
                         op1_addr = op1_addr + 1;
                         op2_addr = op2_addr + 1;
-                        out_addr = out_addr + 1;
                         row = row + 1;
                         col = 0;
                     end else begin
                         en = 0;
                         done = 1;
                     end
-                    
                 end
                 `OPCODE_DECRYPT: begin
                     if (op1_addr <= op1_base_addr_stored + DIMENSION) begin
@@ -128,7 +130,6 @@ module controller
             op1_base_addr_stored = op1_base_addr;
             op2_base_addr_stored = op2_base_addr;
             out_base_addr_stored = out_base_addr;
-            noise_stored = noise;
             en = 0;
             done = 0;
             row = 0;
@@ -144,7 +145,6 @@ module controller
             op1_base_addr_stored = 0;
             op2_base_addr_stored = 0;
             out_base_addr_stored = 0;
-            noise_stored = 0;
             op_select = 0;
             en = 0;
             row = 0;

@@ -1,6 +1,10 @@
 debug:
 	dve -full64 -vpd dump.vcd &
 
+unit_test: clean
+	vcs -full64 -sverilog -timescale=1ns/1ps -debug_access+pp verilog/dv/$(target)_tb.v verilog/rtl/defs.v verilog/rtl/$(target).v
+	./simv
+
 run: compile
 	./simv
 

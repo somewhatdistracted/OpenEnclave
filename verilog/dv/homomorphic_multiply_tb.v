@@ -1,20 +1,22 @@
 `define PLAINTEXT_MODULUS 64 
 `define PLAINTEXT_WIDTH 6
 `define DIMENSION 3
+`define DIM_WIDTH 2
 `define CIPHERTEXT_MODULUS 1024
 `define CIPHERTEXT_WIDTH 21 
 `define BIG_N 30 
+`define PARALLEL 2
 
 module homomorphic_multiply_tb;
 
     reg clk;
     reg rst_n;
-    reg signed [`CIPHERTEXT_WIDTH-1:0] ciphertext_entry;
-    reg [`DIMENSION:0] row;
+    reg [`CIPHERTEXT_WIDTH-1:0] op1 [`PARALLEL-1:0];
+    reg [`DIM_WIDTH:0] row;
     reg ciphertext_select;
     reg en;
-    wire signed [`CIPHERTEXT_WIDTH-1:0] result;
-    reg signed [`CIPHERTEXT_WIDTH-1:0] expected;
+    wire [`CIPHERTEXT_WIDTH-1:0] result [`PARALLEL-1:0];
+    reg [`CIPHERTEXT_WIDTH-1:0] expected [`PARALLEL-1:0];
 
     always #10 clk = ~clk;
 
@@ -24,11 +26,13 @@ module homomorphic_multiply_tb;
         .CIPHERTEXT_MODULUS(`CIPHERTEXT_MODULUS),
         .CIPHERTEXT_WIDTH(`CIPHERTEXT_WIDTH),
         .DIMENSION(`DIMENSION),
-        .BIG_N(`BIG_N)
+        .DIM_WIDTH(`DIM_WIDTH),
+        .BIG_N(`BIG_N),
+        .PARALLEL(`PARALLEL)
     ) homomorphic_inst (
         .clk(clk),
         .rst_n(rst_n),
-        .ciphertext_entry(ciphertext_entry),
+        .op1(op1),
         .row(row),
         .ciphertext_select(ciphertext_select),
         .en(en),
@@ -41,51 +45,55 @@ module homomorphic_multiply_tb;
         en = 0;
         ciphertext_select = 0;
         row = 0;
-        ciphertext_entry = 0;
-        #200;
+        op1[0] = 0;
+        op1[1] = 0;
+        #20;
         rst_n = 1;
-        #200;
+        #20;
 
         // reading in ciphertext 1 [ 1 1 1 1 ]
         row = 0;
         ciphertext_select = 0;
-        ciphertext_entry = 1;
+        op1[0] = 1;
+        op1[1] = 1;
         en = 1;
     	#20;
 
-        row = 1;
-        ciphertext_entry = 1;
-    	#20;
-
         row = 2;
-        ciphertext_entry = 1;
-    	#20;
-
-        row = 3;
-        ciphertext_entry = 1;
+        op1[0] = 1;
+        op1[1] = 1;
     	#20;
 
         // reading in ciphertext 2 [ 1 1 1 1 ]
         row = 0;
         ciphertext_select = 1;
-        ciphertext_entry = 1;
-        #20;
-    	$display("Result = %d", result); assert(result == 1);
+        op1[0] = 1;
+        op1[1] = 1;
 
-        row = 1;
         #20;
-    	$display("Result = %d", result); assert(result == 2);
+        expected[0] = 1;
+        expected[1] = 2;
+    	$display("Result = %d, %d", result[0], result[1]); assert(result == expected);
 
         row = 2;
         #20;
-    	$display("Result = %d", result); assert(result == 3);
+        expected[0] = 3;
+        expected[1] = 4;
+    	$display("Result = %d, %d", result[0], result[1]); assert(result == expected);
 
-        row = 3;
-        #20;
-    	$display("Result = %d", result); assert(result == 4);
-
-        // read out rest of results
+        row = 4;
         ciphertext_select = 0;
+        #20;
+        expected[0] = 3;
+        expected[1] = 2;
+    	$display("Result = %d, %d", result[0], result[1]); assert(result == expected);
+
+        row = 6;
+        #20;
+        expected[0] = 1;
+    	$display("Result = %d, %d", result[0], result[1]); assert(result[0] == expected[0]);
+
+        /*
         row = 4;
         #20;
     	$display("Result = %d", result); assert(result == 3);
@@ -98,8 +106,9 @@ module homomorphic_multiply_tb;
         #20;
     	$display("Result = %d", result); assert(result == 1);
         #20;
+        */
 
-
+        #200;
         $finish;
     end
 
