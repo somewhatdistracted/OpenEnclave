@@ -28,127 +28,129 @@ module controller
     output reg op_select,
     output reg en,
     output reg done,
-    output reg [DIM_WIDTH-1:0] row
+    output reg [DIM_WIDTH:0] row
 );
     reg [ADDR_WIDTH-1:0] op1_base_addr_stored;
     reg [ADDR_WIDTH-1:0] op2_base_addr_stored;
     reg [ADDR_WIDTH-1:0] out_base_addr_stored;
     reg [DIM_WIDTH-1:0] col; // counter for encrypt
 
-    always @(posedge clk) begin
+    always_ff @(posedge clk) begin
 
         // lowest priority: evolve state
         if (en) begin
             case (opcode_out)
                 `OPCODE_ENCRYPT: begin
                     // if just reset col and isn't first row
-                    if (row != 0 && col == 0) begin
-                        out_addr = out_addr + 1;
-                    end
-                    
-                    if (col >= BIG_N && row == DIMENSION) begin
-                        en = 0;
-                        done = 1;
-                        row = 0;
-                        col = 0;
-                        out_addr = out_addr + 1;
-                    end else if (col < BIG_N) begin
-                        op1_addr = op1_addr + 1;
-                        op2_addr = op2_addr + 1;
-                        col = col + PARALLEL;
-                    end else if (col >= BIG_N) begin
-                        op1_addr = op1_addr + 1;
-                        op2_addr = op2_addr + 1;
-                        row = row + 1;
-                        col = 0;
+                    if (row > DIMENSION && col > 0) begin
+                        en <= 0;
+                        done <= 1;
+                        row <= 0;
+                        col <= 0;
+                        out_addr <= out_addr + 1;
+                    end else if (row != 0 && col == 0) begin
+                        op1_addr <= op1_addr + 1;
+                        op2_addr <= op2_addr + 1;
+                        out_addr <= out_addr + 1;
+                        col <= col + 2;
+                    end else if (col + 1 < BIG_N) begin
+                        op1_addr <= op1_addr + 1;
+                        op2_addr <= op2_addr + 1;
+                        col <= col + 2;
+                    end else if (col + 1 >= BIG_N) begin
+                        op1_addr <= op1_addr + 1;
+                        op2_addr <= op2_addr + 1;
+                        row <= row + 1;
+                        col <= 0;
                     end else begin
-                        en = 0;
-                        done = 1;
+                        en <= 0;
+                        done <= 1;
                     end
                 end
                 `OPCODE_DECRYPT: begin
-                    if (op1_addr <= op1_base_addr_stored + DIMENSION) begin
-                        op1_addr = op1_addr + 1;
-                        op2_addr = op2_addr + 1;
-                        row = row + 1;
+                    if (op1_addr <= op1_base_addr_stored + DIMENSION/PARALLEL) begin
+                        op1_addr <= op1_addr + 1;
+                        op2_addr <= op2_addr + 1;
+                        row <= row + 1;
                     end else begin
-                        en = 0;
-                        done = 1;
+                        en <= 0;
+                        done <= 1;
                     end
                 end
                 `OPCODE_ADD: begin
-                    if (op1_addr == op1_base_addr_stored) begin
-                        op1_addr = op1_addr + 1;
-                        op2_addr = op2_addr + 1;
-                    end else if (op1_addr <= op1_base_addr_stored + DIMENSION) begin
-                        op1_addr = op1_addr + 1;
-                        op2_addr = op2_addr + 1;
-                        out_addr = out_addr + 1;
+                    if (op1_addr <= op1_base_addr_stored + DIMENSION/PARALLEL) begin
+                        op1_addr <= op1_addr + 1;
+                        op2_addr <= op2_addr + 1;
+                        out_addr <= out_addr + 1;
                     end else begin
-                        en = 0;
-                        done = 1;
+                        en <= 0;
+                        done <= 1;
                     end
                 end
                 `OPCODE_MULT: begin
                     // cycle through op1 addrs
                     // cycle through op2 addrs
                     // push rows through
-                    if (op1_addr <= op1_base_addr_stored + DIMENSION) begin
-                        op1_addr = op1_addr + 1;
-                        out_addr = out_addr + 1; // note: this will cover second half of last answer
-                        row = row + 1;
-                        op_select = 0;
+                    if (op1_addr < op1_base_addr_stored + DIMENSION/PARALLEL) begin
+                        op1_addr <= op1_addr + 1;
+                        row <= row + 1;
+                    end else if (op_select != 1 && !done) begin
+                        row <= 0;
+                        op_select <= 1;
+                    end else if (op2_addr < op2_base_addr_stored + DIMENSION/PARALLEL) begin
+                        op2_addr <= op2_addr + 1;
+                        out_addr <= out_addr + 1; // this covers first half of this answer
+                        row <= row + 1;
+                        op_select <= 1;
+                    end else if (op2_addr == op2_base_addr_stored + DIMENSION/PARALLEL) begin
+                        op2_addr <= op2_addr + 1;
+                        out_addr <= out_addr + 1; // this covers first half of this answer
+                        row <= row + 1;
+                        op_select <= 0;
+                        done <= 1;
+                    end else if (row <= 2*DIMENSION/PARALLEL) begin
+                        out_addr <= out_addr + 1; // this covers first half of this answer
+                        row <= row + 1;
                     end else begin
-                        if (op2_addr <= op2_base_addr_stored + DIMENSION) begin
-                            op2_addr = op2_addr + 1;
-                            out_addr = out_addr + 1; // note: this will cover first half of this answer
-                            row = row + 1;
-                            en = 1;
-                            op_select = 1;
-                        end else begin
-                            en = 0;
-                            done = 1;
-                        end
+                        en <= 0;
+                        done <= 1;
                     end
-                end
-                default: begin
-
                 end
             endcase
         end
 
         if (!en && !done && !config_en) begin
-            en = 1;
+            en <= 1;
         end
 
         // second highest priority: configure
         if (config_en) begin
-            opcode_out = opcode;
-            op1_addr = op1_base_addr;
-            op2_addr = op2_base_addr;
-            out_addr = out_base_addr;
-            op1_base_addr_stored = op1_base_addr;
-            op2_base_addr_stored = op2_base_addr;
-            out_base_addr_stored = out_base_addr;
-            en = 0;
-            done = 0;
-            row = 0;
-            col = 0;
+            opcode_out <= opcode;
+            op1_addr <= op1_base_addr;
+            op2_addr <= op2_base_addr;
+            out_addr <= out_base_addr;
+            op1_base_addr_stored <= op1_base_addr;
+            op2_base_addr_stored <= op2_base_addr;
+            out_base_addr_stored <= out_base_addr;
+            en <= 0;
+            done <= 0;
+            row <= 0;
+            col <= 0;
         end
 
         // highest priority: reset
         if (!rst_n) begin
-            opcode_out = 0;
-            op1_addr = 0;
-            op2_addr = 0;
-            out_addr = 0;
-            op1_base_addr_stored = 0;
-            op2_base_addr_stored = 0;
-            out_base_addr_stored = 0;
-            op_select = 0;
-            en = 0;
-            row = 0;
-            col = 0;
+            opcode_out <= 0;
+            op1_addr <= 0;
+            op2_addr <= 0;
+            out_addr <= 0;
+            op1_base_addr_stored <= 0;
+            op2_base_addr_stored <= 0;
+            out_base_addr_stored <= 0;
+            op_select <= 0;
+            en <= 0;
+            row <= 0;
+            col <= 0;
         end
     end
 

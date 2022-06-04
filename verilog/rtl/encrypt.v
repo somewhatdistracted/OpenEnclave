@@ -17,52 +17,48 @@ module encrypt
 
     input [CIPHERTEXT_WIDTH-1:0] op1 [PARALLEL-1:0], // ops aren't named anymore since
     input [CIPHERTEXT_WIDTH-1:0] op2 [PARALLEL-1:0], // the channel gets reused for bandwidth
-    input [DIM_WIDTH-1:0] row,
+    input [DIM_WIDTH:0] row,
 
     output reg [CIPHERTEXT_WIDTH-1:0] ciphertext
 );
-    reg [CIPHERTEXT_WIDTH-1:0] psum [DIMENSION:0];
-    wire [CIPHERTEXT_WIDTH-1:0] parallel1 [PARALLEL-1:0];
-    wire [CIPHERTEXT_WIDTH-1:0] parallel2 [PARALLEL-1:0];
+    reg [DIMENSION:0][CIPHERTEXT_WIDTH-1:0] psum;
+    wire [PARALLEL-1:0][CIPHERTEXT_WIDTH-1:0] parallel1;
+    wire [PARALLEL-1:0][CIPHERTEXT_WIDTH-1:0] parallel2;
     reg [DIM_WIDTH-1:0] last_row;
+
+    /*
+    always @(posedge clk) begin
+        $display("P: %d, %d, %d", psum[0], psum[1], psum[2]);
+    end
+    */
 
     // logic for parallel>1
     generate
-        genvar i;
+        genvar ienc;
         assign parallel1[0] = op1[0][CIPHERTEXT_WIDTH-1] ? 0 : op1[0];
         assign parallel2[0] = op2[0][CIPHERTEXT_WIDTH-1] ? 0 : op2[0];
-        for (i = 1; i < PARALLEL; i+=1) begin
-            assign parallel1[i] = parallel1[i-1] + (op1[i][CIPHERTEXT_WIDTH-1] ? 0 : op1[i]);
-            assign parallel2[i] = parallel2[i-1] + (op2[i][CIPHERTEXT_WIDTH-1] ? 0 : op2[i]);
+        for (ienc = 1; ienc < PARALLEL; ienc+=1) begin
+            assign parallel1[ienc] = parallel1[ienc-1] + (op1[ienc][CIPHERTEXT_WIDTH-1] ? 0 : op1[ienc]);
+            assign parallel2[ienc] = parallel2[ienc-1] + (op2[ienc][CIPHERTEXT_WIDTH-1] ? 0 : op2[ienc]);
         end
     endgenerate
 
     // main logic
-    always @(posedge clk) begin
-        if (!done && rst_n) begin
+    always_ff @(posedge clk) begin
+        if (en && rst_n) begin
             psum[row] <= psum[row] + parallel1[PARALLEL-1] + parallel2[PARALLEL-1];
+        end else begin
+            last_row <= 0;
+            psum <= 0;
         end
 
         // set output
         if (!rst_n) begin
-            ciphertext = 0;
+            ciphertext <= 0;
         end else if (row != last_row) begin
             ciphertext <= psum[last_row];
         end
 
         last_row <= row;
     end
-    
-    // reset array logic
-    generate
-        genvar j;
-        for (j = 0; j <= DIMENSION; j += 1) begin
-            always @(posedge clk) begin
-                if (done || !rst_n) begin
-                    last_row <= 0;
-                    psum[j] <= 0;
-                end
-            end
-        end
-    endgenerate
 endmodule

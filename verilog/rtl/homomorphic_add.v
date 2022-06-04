@@ -11,16 +11,29 @@ module homomorphic_add
 (
     input clk,
     input rst_n,
+    input en,
     
     input signed [CIPHERTEXT_WIDTH-1:0] ciphertext1 [PARALLEL-1:0],
     input signed [CIPHERTEXT_WIDTH-1:0] ciphertext2 [PARALLEL-1:0],
     
     output wire [CIPHERTEXT_WIDTH-1:0] result [PARALLEL-1:0]
 );
+    reg [PARALLEL-1:0][CIPHERTEXT_WIDTH-1:0] ir;
+
+    always_ff @(posedge clk) begin
+        if (en) begin
+            for (int aaa = 0; aaa < PARALLEL; aaa+=1) begin
+                ir[aaa] <= ciphertext1[aaa] + ciphertext2[aaa];
+            end
+        end else begin
+            ir <= 0;
+        end
+    end
+
     generate
-        genvar i;
-        for (i = 0; i < PARALLEL; i+=1) begin
-            assign result[i] = ciphertext1[i] + ciphertext2[i];
+        genvar iadd;
+        for (iadd = 0; iadd < PARALLEL; iadd+=1) begin
+            assign result[iadd] = ir[iadd];
         end
     endgenerate
   

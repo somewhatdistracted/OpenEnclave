@@ -6,14 +6,14 @@ module top
     parameter PLAINTEXT_MODULUS = 64,
     parameter PLAINTEXT_WIDTH = 6,
     parameter CIPHERTEXT_MODULUS = 1024,
-    parameter CIPHERTEXT_WIDTH = 10,
+    parameter CIPHERTEXT_WIDTH = 32,
     parameter DIMENSION = 10,
     parameter BIG_N = 30,
     parameter OPCODE_ADDR = 32'h30000000,
     parameter OUTPUT_ADDR = 32'h00000001,
-    parameter DATA_WIDTH = 64,
+    parameter DATA_WIDTH = 128,
     parameter ADDR_WIDTH = 9,
-    parameter DEPTH = 512,
+    parameter DEPTH = 256,
     parameter DIM_WIDTH = 4,
     parameter PARALLEL = 1,
     parameter USE_POWER_PINS = 0, 
@@ -61,20 +61,24 @@ module top
     output wire        wbs_ack_o,
     output wire [31:0] wbs_dat_o
 );  
+
+    // CHIP-LEVEL STUFF
     wire clk;
     wire rst_n;
 
     assign clk = (la_oenb[0] & la_data_in[0]) ? user_clock2 : wb_clk_i;
     assign rst_n = la_oenb[1] ? la_data_in[1] : 1;
 
+    // WISHBONE DECLARATIONS
     wire [31:0] wishbone_output;
     wire [31:0] wishbone_data;
     wire [31:0] wishbone_addr;
     wire wb_read_req;
     wire wb_write_req;
-   
-    wire [1:0] opcode;
     wire config_en;
+    // CONTROLLER DECLARATIONS
+    wire valid_opcode;
+    wire [1:0] opcode;
     wire [ADDR_WIDTH-1:0] op1_base_addr;
     wire [ADDR_WIDTH-1:0] op2_base_addr;
     wire [ADDR_WIDTH-1:0] out_base_addr;
@@ -83,81 +87,49 @@ module top
     reg [ADDR_WIDTH-1:0] op2_addr;
     reg [ADDR_WIDTH-1:0] out_addr;
     reg op_select;
+    reg op_select_delayed;
     reg en;
     reg done;
-    reg [DIM_WIDTH-1:0] row;
-
+    reg [DIM_WIDTH:0] row;
+    // SRAM DECLARATIONS
     wire in_wen;
     wire [ADDR_WIDTH - 1 : 0] in_wadr;
     wire [DATA_WIDTH - 1 : 0] in_wdata;
-
-    wire out_wen;
-    wire [ADDR_WIDTH - 1 : 0] out_wadr;
+    reg out_wen;
+    reg [ADDR_WIDTH - 1 : 0] out_wadr_delay_stage;
+    reg [ADDR_WIDTH - 1 : 0] out_wadr;
     wire [DATA_WIDTH - 1 : 0] out_wdata;
-    
     wire op1_ren;
     wire [ADDR_WIDTH - 1 : 0] op1_radr;
     wire [DATA_WIDTH - 1 : 0] op1_rdata;
-
     wire op2_ren;
     wire [ADDR_WIDTH - 1 : 0] op2_radr;
     wire [DATA_WIDTH - 1 : 0] op2_rdata;
-    
     wire out_ren;
     wire [ADDR_WIDTH - 1 : 0] out_radr;
     wire [DATA_WIDTH - 1 : 0] out_rdata;
-
-    wire [CIPHERTEXT_WIDTH-1:0] plaintext_and_noise [PARALLEL-1:0];
-    wire [CIPHERTEXT_WIDTH-1:0] publickey_entry [PARALLEL-1:0];
-    wire [BIG_N-1:0] noise_select;
-    wire [DIM_WIDTH-1:0] encrypt_row;
-    wire [CIPHERTEXT_WIDTH-1:0] ciphertext_result;
-
-    wire [CIPHERTEXT_WIDTH-1:0] secretkey_entry;
-    wire [CIPHERTEXT_WIDTH-1:0] ct_entry;
-    wire [DIMENSION:0] decrypt_row;
-    wire [PLAINTEXT_WIDTH-1:0] decrypt_result;
-
-    wire [CIPHERTEXT_WIDTH-1:0] ciphertext1;
-    wire [CIPHERTEXT_WIDTH-1:0] ciphertext2;
-    wire [CIPHERTEXT_WIDTH-1:0] add_result;
-
-    wire [CIPHERTEXT_WIDTH-1:0] ciphertext_entry;
-    wire [DIMENSION:0] mult_row;
-    wire ciphertext_select;
+    // FUNCTIONAL MODULE DECLARATIONS
+    wire [CIPHERTEXT_WIDTH-1:0] op1_structured [PARALLEL-1:0];
+    wire [CIPHERTEXT_WIDTH-1:0] op2_structured [PARALLEL-1:0];
+    reg [DIM_WIDTH:0] delayed_row;
+    // ENCRYPT DECLARATIONS
+    wire [CIPHERTEXT_WIDTH-1:0] encrypt_out;
+    reg encrypt_en;
+    // DECRYPT DECLARATIONS
+    wire [PLAINTEXT_WIDTH-1:0] decrypt_out;
+    wire decrypt_en;
+    // HOMOMORPHIC ADD DECLARATIONS
+    wire [CIPHERTEXT_WIDTH-1:0] add_out [PARALLEL-1:0];
+    wire [(PARALLEL*CIPHERTEXT_WIDTH)-1:0] add_out_flattened;
+    wire add_en;
+    // HOMOMORPHIC MULTIPLY DECLARACTIONS
+    wire [CIPHERTEXT_WIDTH-1:0] muxed_ops [PARALLEL-1:0];
+    wire [CIPHERTEXT_WIDTH-1:0] mult_out [PARALLEL-1:0];
+    wire [(PARALLEL*CIPHERTEXT_WIDTH)-1:0] mult_out_flattened;
     wire mult_en;
-    wire [CIPHERTEXT_WIDTH-1:0] mult_result;
 
+    // ----- WISHBONE -----
     assign wishbone_output = out_rdata;
-
-    //Debug Prints
-    always@(posedge clk) begin
-    /*  $display("Chip Output = %d", wbs_dat_o);
-      $display("Wishbone In = %d", wbs_dat_i);
-      $display("Wishbone Data = %d", wishbone_data);
-      $display("Wishbone ADR = %d", wbs_adr_i);
-      $display("Config = %d", config_en);
-      $display("OPCODE = %d", opcode_out);
-      $display("SRAM Write Data = %d", in_wdata);
-      $display("SRAM Write Adr = %d", in_wadr);
-      $display("SRAM OW Data = %d", out_wdata);
-      $display("SRAM OW ADDR = %d", out_wadr);
-      $display("SRAM OR Data = %d", out_rdata);
-      $display("SRAM O Adr = %d", out_radr);*/
-      $display("Op Data 1 = %d", op1_rdata);
-      $display("Op Data 2 = %d", op2_rdata);
-      $display("Op Adr 1 = %d", op1_radr);
-      $display("Op Adr 2 = %d", op2_radr);
-      $display("Op Base Adr 1 = %d", op1_base_addr);
-      $display("Op Base Adr 2 = %d", op2_base_addr);
-      $display("Row = %d", row);
-
-      $display("Reset = %d", rst_n);
-      $display("En = %d", en);
-      $display("Done = %d", done);
-
-    /**/  $display(" ");
-    end 
 
     // WISHBONE
     wishbone_ctl #(
@@ -181,11 +153,13 @@ module top
         .wbs_dat_o(wbs_dat_o)        
     );
 
-    //Controller
+    // ----- CONTROLLER -----
+    // PARSE INSTRUCTION
     assign opcode = wishbone_data[1:0];
     assign op1_base_addr = wishbone_data[(2+ADDR_WIDTH)-1:2];
     assign op2_base_addr = wishbone_data[(2+(2*ADDR_WIDTH))-1:(2+ADDR_WIDTH)];
     assign out_base_addr = wishbone_data[(2+(3*ADDR_WIDTH))-1:(2+(2*ADDR_WIDTH))];
+    assign valid_opcode = wishbone_data[31];
 
     controller #(
         .PLAINTEXT_MODULUS(PLAINTEXT_MODULUS),
@@ -193,17 +167,18 @@ module top
         .CIPHERTEXT_MODULUS(CIPHERTEXT_MODULUS),
         .CIPHERTEXT_WIDTH(CIPHERTEXT_WIDTH),
         .DIMENSION(DIMENSION),
+        .DIM_WIDTH(DIM_WIDTH),
         .BIG_N(BIG_N),
-        .ADDR_WIDTH(ADDR_WIDTH)
+        .ADDR_WIDTH(ADDR_WIDTH),
+        .PARALLEL(PARALLEL)
     ) controller_inst (
         .clk(clk),
         .rst_n(rst_n),
         .opcode(opcode),
-        .config_en(config_en),
+        .config_en(config_en && valid_opcode),
         .op1_base_addr(op1_base_addr),
         .op2_base_addr(op2_base_addr),
         .out_base_addr(out_base_addr),
-        .noise(noise_select),
         .opcode_out(opcode_out),
         .op1_addr(op1_addr),
         .op2_addr(op2_addr),
@@ -214,14 +189,15 @@ module top
         .row(row)
     );
 
-    //SRAM
+    // ----- SRAM -----
+    // CONFIGURATION
     assign in_wen = wb_write_req & !config_en;
     assign in_wadr = wishbone_addr[ADDR_WIDTH:0];
     assign in_wdata = wishbone_data;
 
-    assign out_wen = en;
-    assign out_wadr = out_addr;
-    assign out_wdata = (opcode_out == `OPCODE_ENCRYPT) ? ciphertext_result : ((opcode_out == `OPCODE_DECRYPT) ? decrypt_result : ((opcode_out == `OPCODE_ADD) ? add_result : mult_result));
+    //assign out_wen = en;
+    //assign out_wadr = out_addr;
+    assign out_wdata = (opcode_out == `OPCODE_ENCRYPT) ? encrypt_out : ((opcode_out == `OPCODE_DECRYPT) ? decrypt_out : ((opcode_out == `OPCODE_ADD) ? add_out_flattened : mult_out_flattened));
 
     assign op1_ren = en;
     assign op1_radr = op1_addr;
@@ -232,6 +208,7 @@ module top
     assign out_ren = wb_read_req;
     assign out_radr = wishbone_addr[ADDR_WIDTH:0];
 
+    // SRAM
     sram #(
         .DATA_WIDTH(DATA_WIDTH),
         .ADDR_WIDTH(ADDR_WIDTH),
@@ -255,12 +232,27 @@ module top
         .out_rdata(out_rdata)
     );
 
-    assign encrypt_row = row;
+    // ----- ALL FUNCTIONAL MODULES -----
+    // RESTRUCTURE FOR PARALLEL
+    generate
+        genvar ip;
+        for (ip = 0; ip<PARALLEL; ip+=1) begin
+            assign op1_structured[ip] = op1_rdata[((ip+1)*CIPHERTEXT_WIDTH)-1:ip*CIPHERTEXT_WIDTH];
+            assign op2_structured[ip] = op2_rdata[((ip+1)*CIPHERTEXT_WIDTH)-1:ip*CIPHERTEXT_WIDTH];
+        end
+    endgenerate
 
-    assign plaintext_and_noise[0] = op1_rdata;
-    assign publickey_entry[0] = op2_rdata;
-    assign noise_select = 42;
-    
+    always_ff @(posedge clk) begin
+        delayed_row <= row;
+        out_wen <= en; // possible danger zone stupid thing
+        out_wadr_delay_stage <= out_addr;
+        out_wadr <= out_wadr_delay_stage;
+        op_select_delayed <= op_select;
+        encrypt_en <= (opcode_out == `OPCODE_ENCRYPT) && en;
+    end
+
+    // ----- ENCRYPT -----
+
     // ENCRYPT
     encrypt #(
         .PLAINTEXT_MODULUS(PLAINTEXT_MODULUS),
@@ -269,22 +261,21 @@ module top
         .CIPHERTEXT_WIDTH(CIPHERTEXT_WIDTH),
         .DIMENSION(DIMENSION),
         .DIM_WIDTH(DIM_WIDTH),
-        .BIG_N(BIG_N)
+        .BIG_N(BIG_N),
+        .PARALLEL(PARALLEL)
     ) encrypt_inst (
         .clk(clk),
         .rst_n(rst_n),
-        .en(en),
+        .en(encrypt_en),
         .done(done),
-        .op1(plaintext_and_noise),
-        .op2(publickey_entry),
-        .row(encrypt_row),
-        .ciphertext(ciphertext_result)
+        .op1(op1_structured),
+        .op2(op2_structured),
+        .row(delayed_row),
+        .ciphertext(encrypt_out)
     );
 
-    assign decrypt_row = row;
-
-    assign ct_entry = op1_rdata;
-    assign secretkey_entry = op2_rdata;
+    // ----- DECRYPT -----
+    assign decrypt_en = (opcode_out == `OPCODE_DECRYPT) && en;
     
     // DECRYPT
     decrypt #(
@@ -293,18 +284,29 @@ module top
         .CIPHERTEXT_MODULUS(CIPHERTEXT_MODULUS),
         .CIPHERTEXT_WIDTH(CIPHERTEXT_WIDTH),
         .DIMENSION(DIMENSION),
-        .BIG_N(BIG_N)
+        .DIM_WIDTH(DIM_WIDTH),
+        .BIG_N(BIG_N),
+        .PARALLEL(PARALLEL)
     ) decrypt_inst (
         .clk(clk),
         .rst_n(rst_n),
-        .secretkey_entry(secretkey_entry),
-        .ciphertext_entry(ct_entry),
-        .row(decrypt_row),
-        .result(decrypt_result)
+        .en(en),
+        .secretkey_entry(op1_structured),
+        .ciphertext_entry(op2_structured),
+        .row(delayed_row),
+        .result(decrypt_out)
     );
 
-    assign ciphertext1 = op1_rdata;
-    assign ciphertext2 = op2_rdata;
+    // ----- HOMOMORPHIC ADD -----
+    assign add_en = (opcode_out == `OPCODE_ADD) && en;
+
+    generate
+        genvar iaf;
+        for (iaf = 0; iaf<PARALLEL; iaf+=1) begin
+            assign add_out_flattened[((iaf+1)*CIPHERTEXT_WIDTH)-1:(iaf*CIPHERTEXT_WIDTH)] = add_out[iaf];
+        end
+    endgenerate
+    
 
     // ADD
     homomorphic_add #(
@@ -313,20 +315,28 @@ module top
         .CIPHERTEXT_MODULUS(CIPHERTEXT_MODULUS),
         .CIPHERTEXT_WIDTH(CIPHERTEXT_WIDTH),
         .DIMENSION(DIMENSION),
-        .BIG_N(BIG_N)
+        .BIG_N(BIG_N),
+        .PARALLEL(PARALLEL)
     ) homomorphic_inst (
         .clk(clk),
         .rst_n(rst_n),
-        .ciphertext1(ciphertext1),
-        .ciphertext2(ciphertext2),
-        .result(add_result)
+        .en(en),
+        .ciphertext1(op1_structured),
+        .ciphertext2(op2_structured),
+        .result(add_out)
     );
         
-    assign mult_row = row;
-    assign mult_en = en & (opcode_out == `OPCODE_MULT);
-    assign ciphertext_select = op_select;
+    // ----- HOMOMORPHIC MULTIPLY -----
+    assign mult_en = (opcode_out == `OPCODE_MULT) && en;
 
-    assign ciphertext_entry = (op_select == 0) ? op1_rdata : op2_rdata;
+    generate
+        genvar imf;
+        for (imf = 0; imf<PARALLEL; imf+=1) begin
+            assign mult_out_flattened[((imf+1)*CIPHERTEXT_WIDTH)-1:(imf*CIPHERTEXT_WIDTH)] = mult_out[imf];
+        end
+    endgenerate
+
+    assign muxed_ops = (op_select_delayed == 0) ? op1_structured : op2_structured;
 
     // MULT
     homomorphic_multiply #(
@@ -335,16 +345,49 @@ module top
         .CIPHERTEXT_MODULUS(CIPHERTEXT_MODULUS),
         .CIPHERTEXT_WIDTH(CIPHERTEXT_WIDTH),
         .DIMENSION(DIMENSION),
-        .BIG_N(BIG_N)
+        .DIM_WIDTH(DIM_WIDTH),
+        .BIG_N(BIG_N),
+        .PARALLEL(PARALLEL)
     ) homomorphic_multiply_inst (
         .clk(clk),
         .rst_n(rst_n),
-        .ciphertext_entry(ciphertext_entry),
-        .row(mult_row),
-        .ciphertext_select(ciphertext_select),
-        .en(mult_en),
-        .result_partial(mult_result)
+        .op1(muxed_ops),
+        .row(delayed_row),
+        .ciphertext_select(op_select_delayed),
+        .en(en),
+        .result_partial(mult_out)
     );
+
+    /*
+    //Debug Prints
+    always@(posedge clk) begin
+      $display("Chip Output = %d", wbs_dat_o);
+      $display("Wishbone In = %d", wbs_dat_i);
+      $display("Wishbone Data = %d", wishbone_data);
+      $display("Wishbone ADR = %d", wbs_adr_i);
+      $display("Config = %d", config_en);
+      $display("OPCODE = %d", opcode_out);
+      $display("SRAM Write Data = %d", in_wdata);
+      $display("SRAM Write Adr = %d", in_wadr);
+      $display("Func output = %d, Decrypt output: %d", out_wdata, decrypt_out);
+      $display("SRAM OW ADDR = %d", out_wadr);
+      $display("SRAM OR Data = %d", out_rdata);
+      $display("SRAM O Adr = %d", out_radr);
+      $display("Op1 Data = %d", op1_rdata);
+      $display("Op2 Data = %d", op2_rdata);
+      $display("Op1 Adr = %d", op1_radr);
+      $display("Op2 Adr = %d", op2_radr);
+      //$display("Op1 Base Adr = %d", op1_base_addr);
+      //$display("Op2 Base Adr = %d", op2_base_addr);
+      $display("Row = %d", row);
+      //$display("Delayed Row = %d", delayed_row);
+      $display("Reset = %d", rst_n);
+      $display("En = %d", en);
+      $display("Done = %d", done);
+
+      $display(" ");
+    end 
+    */
 
 endmodule
 //`default_nettype wire

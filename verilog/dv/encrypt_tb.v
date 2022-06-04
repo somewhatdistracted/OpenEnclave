@@ -16,7 +16,7 @@ module encrypt_tb;
     reg done;
     reg [`CIPHERTEXT_WIDTH-1:0] chan1 [`PARALLEL-1:0];
     reg [`CIPHERTEXT_WIDTH-1:0] chan2 [`PARALLEL-1:0];
-    reg [`DIM_WIDTH-1:0] row;
+    reg [`DIM_WIDTH:0] row;
     reg [`CIPHERTEXT_WIDTH-1:0] ciphertext;
     reg [`CIPHERTEXT_WIDTH-1:0] expected;
 

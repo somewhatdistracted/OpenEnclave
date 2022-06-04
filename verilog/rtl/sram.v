@@ -52,7 +52,9 @@ module sram
                 //       any delay < half a cycle will not affect the simulation result.
                 //       Since we will try to push for a clock period of 5ns, we manually
                 //       changed the delay number to 1ns (< 2.5ns) to prevent functional error.
-                sky130_sram_1kbyte_1rw1r_32x256_8 sram1 (
+                sky130_sram_1kbyte_1rw1r_32x256_8 #(
+                    .VERBOSE(0)
+                ) sram1 (
                     .clk0(clk),
                     .csb0(~(in_wen && (in_wadr[ADDR_WIDTH - 1 : 8] == y))),
                     .web0(~(in_wen && (in_wadr[ADDR_WIDTH - 1 : 8] == y))), // And wadr in range
@@ -77,7 +79,9 @@ module sram
                 //       any delay < half a cycle will not affect the simulation result.
                 //       Since we will try to push for a clock period of 5ns, we manually
                 //       changed the delay number to 1ns (< 2.5ns) to prevent functional error.
-                sky130_sram_1kbyte_1rw1r_32x256_8 sram2 (
+                sky130_sram_1kbyte_1rw1r_32x256_8 #(
+                    .VERBOSE(0)
+                ) sram2 (
                     .clk0(clk),
                     .csb0(~(in_wen && (in_wadr[ADDR_WIDTH - 1 : 8] == y))),
                     .web0(~(in_wen && (in_wadr[ADDR_WIDTH - 1 : 8] == y))), // And wadr in range
@@ -102,7 +106,9 @@ module sram
                 //       any delay < half a cycle will not affect the simulation result.
                 //       Since we will try to push for a clock period of 5ns, we manually
                 //       changed the delay number to 1ns (< 2.5ns) to prevent functional error.
-                sky130_sram_1kbyte_1rw1r_32x256_8 sram3 (
+                sky130_sram_1kbyte_1rw1r_32x256_8 #(
+                    .VERBOSE(0)
+                ) sram3 (
                     .clk0(clk),
                     .csb0(~(out_wen && (out_wadr[ADDR_WIDTH - 1 : 8] == y))),
                     .web0(~(out_wen && (out_wadr[ADDR_WIDTH - 1 : 8] == y))), // And wadr in range

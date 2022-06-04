@@ -10,6 +10,7 @@ module homomorphic_add_tb;
 
     reg clk;
     reg rst_n;
+    reg en;
     reg [`CIPHERTEXT_WIDTH-1:0] ciphertext1 [`PARALLEL-1:0];
     reg [`CIPHERTEXT_WIDTH-1:0] ciphertext2 [`PARALLEL-1:0];
     wire [`CIPHERTEXT_WIDTH-1:0] result [`PARALLEL-1:0];
@@ -28,6 +29,7 @@ module homomorphic_add_tb;
     ) homomorphic_inst (
         .clk(clk),
         .rst_n(rst_n),
+        .en(en),
         .ciphertext1(ciphertext1),
         .ciphertext2(ciphertext2),
         .result(result)
@@ -35,6 +37,7 @@ module homomorphic_add_tb;
 
     initial begin
         rst_n = 1;
+        en = 1;
 
         ciphertext1[0] = `CIPHERTEXT_WIDTH'd102; // fill
         ciphertext1[1] = `CIPHERTEXT_WIDTH'd72; // fill

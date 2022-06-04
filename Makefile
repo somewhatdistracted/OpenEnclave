@@ -16,6 +16,7 @@ compile: concat
 	
 copy_verilog: concat
 	cp verilog/outputs/design.v skywater-digital-flow/OpenEnclave/design/rtl/design.v
+	cp verilog/dv/top_tb.v skywater-digital-flow/OpenEnclave/design/testbench/top_tb.sv
 
 clean:
 	rm -rf simv
