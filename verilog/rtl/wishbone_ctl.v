@@ -76,7 +76,7 @@ assign wbs_ack_o               = ack_o;
 assign wbs_dat_o               = wbs_req_read ? wishbone_output : 32'd0;
 
 assign wishbone_data           = wbs_reg_i;
-assign wishbone_addr           = wbs_reg_addr;
+assign wishbone_addr           = (wbs_reg_addr - 32'h30000004) >> 2;
 
 assign wb_read_req             = wbs_req_read;
 assign wb_write_req            = wbs_req_write;

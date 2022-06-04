@@ -111,51 +111,51 @@ module top_tb;
     wb_rst_i = 0;
     wbs_we_i = 1;
 
-    wbs_adr_i = 0;
+    wbs_adr_i = 32'h30000004;
     wbs_dat_i = 32'd10;
 
     #60
-    wbs_adr_i = 100;
+    wbs_adr_i = 32'h30000194;
     wbs_dat_i = 32'd20;
 
-    #40 
-    wbs_adr_i = 1;
+    #40
+    wbs_adr_i = 32'h30000008;
     wbs_dat_i = 32'd11;
 
     #40
-    wbs_adr_i = 101;
+    wbs_adr_i = 32'h30000198;
     wbs_dat_i = 32'd21;
 
     #40
-    wbs_adr_i = 2;
+    wbs_adr_i = 32'h3000000c;
     wbs_dat_i = 32'd12;
 
     #40
-    wbs_adr_i = 102;
+    wbs_adr_i = 32'h3000019c;
     wbs_dat_i = 32'd22;
 
     #40
-    wbs_adr_i = 3;
+    wbs_adr_i = 32'h30000010;
     wbs_dat_i = 32'd13;
 
     #40
-    wbs_adr_i = 103;
+    wbs_adr_i = 32'h300001a0;
     wbs_dat_i = 32'd23;
 
     #40
-    wbs_adr_i = 4;
+    wbs_adr_i = 32'h30000014;
     wbs_dat_i = 32'd14;
 
     #40
-    wbs_adr_i = 104;
+    wbs_adr_i = 32'h300001a4;
     wbs_dat_i = 32'd24;
 
     #40
-    wbs_adr_i = 5;
+    wbs_adr_i = 32'h30000018;
     wbs_dat_i = 32'd15;
 
     #40
-    wbs_adr_i = 105;
+    wbs_adr_i = 32'h300001a8;
     wbs_dat_i = 32'd25;
 
     // ----- TEST 1: ADD -----
@@ -197,7 +197,7 @@ module top_tb;
     // Read out
     wbs_stb_i = 1;
     wbs_cyc_i = 1;
-    wbs_adr_i = 50;  
+    wbs_adr_i = 32'h300000cc;  
  
     #40
     wbs_stb_i = 0;
@@ -208,7 +208,7 @@ module top_tb;
     #20
     wbs_stb_i = 1;
     wbs_cyc_i = 1;
-    wbs_adr_i = 51;
+    wbs_adr_i = 32'h300000d0;
 
     #40
     wbs_stb_i = 0;
@@ -219,7 +219,7 @@ module top_tb;
     #20
     wbs_stb_i = 1;
     wbs_cyc_i = 1;
-    wbs_adr_i = 52;
+    wbs_adr_i = 32'h300000d4;
 
     #40
     wbs_stb_i = 0;
@@ -258,7 +258,7 @@ module top_tb;
     // Read out
     wbs_stb_i = 1;
     wbs_cyc_i = 1;
-    wbs_adr_i = 30;  
+    wbs_adr_i = 32'h3000007c;  
  
     #40
     wbs_stb_i = 0;
@@ -298,7 +298,7 @@ module top_tb;
     // Read out
     wbs_stb_i = 1;
     wbs_cyc_i = 1;
-    wbs_adr_i = 40;  
+    wbs_adr_i = 32'h300000a4;  
  
     #40
     wbs_stb_i = 0;
@@ -309,7 +309,7 @@ module top_tb;
     #20
     wbs_stb_i = 1;
     wbs_cyc_i = 1;
-    wbs_adr_i = 41;  
+    wbs_adr_i = 32'h300000a8;  
  
     #40
     wbs_stb_i = 0;
@@ -320,7 +320,7 @@ module top_tb;
     #20
     wbs_stb_i = 1;
     wbs_cyc_i = 1;
-    wbs_adr_i = 42;  
+    wbs_adr_i = 32'h300000ac;  
  
     #40
     wbs_stb_i = 0;
@@ -331,7 +331,7 @@ module top_tb;
     #20
     wbs_stb_i = 1;
     wbs_cyc_i = 1;
-    wbs_adr_i = 43;  
+    wbs_adr_i = 32'h300000b0;  
  
     #40
     wbs_stb_i = 0;
@@ -342,7 +342,7 @@ module top_tb;
     #20
     wbs_stb_i = 1;
     wbs_cyc_i = 1;
-    wbs_adr_i = 44;  
+    wbs_adr_i = 32'h300000b4;
  
     #40
     wbs_stb_i = 0;
@@ -382,7 +382,7 @@ module top_tb;
     // Read out
     wbs_stb_i = 1;
     wbs_cyc_i = 1;
-    wbs_adr_i = 70;
+    wbs_adr_i = 32'h3000011c;
  
     #40
     wbs_stb_i = 0;
@@ -393,7 +393,7 @@ module top_tb;
     #20
     wbs_stb_i = 1;
     wbs_cyc_i = 1;
-    wbs_adr_i = 71;
+    wbs_adr_i = 32'h30000120;
 
     #40
     wbs_stb_i = 0;
@@ -404,7 +404,7 @@ module top_tb;
     #20
     wbs_stb_i = 1;
     wbs_cyc_i = 1;
-    wbs_adr_i = 72;
+    wbs_adr_i = 32'h30000124;
 
     #40
     wbs_stb_i = 0;
