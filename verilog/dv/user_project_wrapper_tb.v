@@ -86,8 +86,8 @@ module user_project_wrapper_tb;
     tests_successful = 4'b1111;
     // initialize and reset
     la_data_in = 0;
+    la_data_in[1] = 1;
     la_oenb = 0;
-    la_oenb[1] = 1;
 
     wb_clk_i = 0;
     wb_rst_i = 0;
@@ -100,7 +100,7 @@ module user_project_wrapper_tb;
 
     #20
     // clear reset
-    la_oenb[1] = 0;
+    la_oenb[1] = 1;
 
     // ----- LOAD TWO CIPHERTEXTS (3-VECTORS) PLUS SOME REDUNDANT VALUES -----
     #50
@@ -227,6 +227,7 @@ module user_project_wrapper_tb;
     $display("Wishbone Out = %d", wbs_dat_o);
     assert(wbs_dat_o == 34); if (wbs_dat_o != 34) tests_successful[0] = 0;
 
+    /*
     // ----- TEST 2: DECRYPT -----
     $display("\n\n\n ----- TEST 2 ----- \n\n\n");
     // Send Instruction
@@ -428,6 +429,7 @@ module user_project_wrapper_tb;
     if (tests_successful[3]) begin
         $display("Encrypt Test Passed");
     end
+    */
 
     $display("\n\n\nTest done!\n\n\n");
     $finish;

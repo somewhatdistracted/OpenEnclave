@@ -14,6 +14,9 @@ concat: clean
 compile: concat
 	vcs -full64 -sverilog -timescale=1ns/1ps -debug_access+pp verilog/dv/$(target).v verilog/sram/sky130_sram_1kbyte_1rw1r_32x256_8.v verilog/outputs/design.v 
 	
+manualv: clean
+	vcs -full64 -sverilog -timescale=1ns/1ps -debug_access+pp verilog/dv/$(target).v verilog/sram/sky130_sram_1kbyte_1rw1r_32x256_8.v verilog/openlane_rtl/user_project_wrapper.v verilog/openlane_rtl/user_proj_example.v
+
 copy_verilog: concat
 	cp verilog/outputs/design.v skywater-digital-flow/OpenEnclave/design/rtl/design.v
 	cp verilog/dv/top_tb.v skywater-digital-flow/OpenEnclave/design/testbench/top_tb.sv
