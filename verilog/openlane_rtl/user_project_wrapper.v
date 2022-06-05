@@ -30,7 +30,22 @@
  */
 
 module user_project_wrapper #(
-    parameter BITS = 32
+    parameter BITS = 32,
+    parameter PLAINTEXT_MODULUS = 64,
+    parameter PLAINTEXT_WIDTH = 16,
+    parameter CIPHERTEXT_MODULUS = 1024,
+    parameter CIPHERTEXT_WIDTH = 32,
+    parameter DIMENSION = 128, 
+    parameter BIG_N = 30, 
+    parameter OPCODE_ADDR = 32'h30000000,
+    parameter OUTPUT_ADDR = 32'h00000001,
+    parameter DATA_WIDTH = 128, 
+    parameter ADDR_WIDTH = 9, 
+    parameter DEPTH = 256, 
+    parameter DIM_WIDTH = 8, 
+    parameter PARALLEL = 1, 
+    parameter USE_POWER_PINS = 0, 
+    parameter ENABLE_FULL_IO = 0
 ) (
 `ifdef USE_POWER_PINS
     inout vdda1,	// User area 1 3.3V supply
@@ -105,7 +120,20 @@ module user_project_wrapper #(
 /* User project is instantiated  here   */
 /*--------------------------------------*/
 
-user_proj_example mprj (
+user_proj_example #(
+    .PLAINTEXT_MODULUS(`PLAINTEXT_MODULUS),
+    .PLAINTEXT_WIDTH(`PLAINTEXT_WIDTH),
+    .CIPHERTEXT_MODULUS(`CIPHERTEXT_MODULUS),
+    .CIPHERTEXT_WIDTH(`CIPHERTEXT_WIDTH),
+    .DIMENSION(`DIMENSION),
+    .BIG_N(`BIG_N),
+    .OPCODE_ADDR(`OPCODE_ADDR),
+    .OUTPUT_ADDR(`OUTPUT_ADDR),
+    .DATA_WIDTH(`DATA_WIDTH),
+    .ADDR_WIDTH(`ADDR_WIDTH),
+    .DEPTH(`DEPTH),
+    .DIM_WIDTH(`DIM_WIDTH)
+) user_proj_example_inst (
 `ifdef USE_POWER_PINS
 	.vccd1(vccd1),	// User area 1 1.8V power
 	.vssd1(vssd1),	// User area 1 digital ground

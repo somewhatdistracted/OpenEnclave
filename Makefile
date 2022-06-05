@@ -21,6 +21,11 @@ copy_verilog: concat
 	cp verilog/outputs/design.v skywater-digital-flow/OpenEnclave/design/rtl/design.v
 	cp verilog/dv/top_tb.v skywater-digital-flow/OpenEnclave/design/testbench/top_tb.sv
 
+copy_mverilog: clean
+	cp verilog/openlane_rtl/user_proj_example.v skywater-digital-flow/OpenEnclave/design/rtl/user_proj_example.v
+	cp verilog/dv/user_project_wrapper_tb.v skywater-digital-flow/OpenEnclave/design/testbench/user_project_wrapper_tb.sv
+	cp verilog/dv/user_project_wrapper.v skywater-digital-flow/OpenEnclave/design/testbench/user_project_wrapper.sv
+
 clean:
 	rm -rf simv
 	rm -rf simv.daidir/ 
