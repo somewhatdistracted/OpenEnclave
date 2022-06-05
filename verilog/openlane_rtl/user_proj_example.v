@@ -4,24 +4,23 @@
 `define OPCODE_ADD      2'b10
 `define OPCODE_MULT     2'b11
 
-
 //`default_nettype none
 `define MPRJ_IO_PADS 38
 
 module user_proj_example
 #(
     parameter PLAINTEXT_MODULUS = 64,
-    parameter PLAINTEXT_WIDTH = 6,
+    parameter PLAINTEXT_WIDTH = 16,
     parameter CIPHERTEXT_MODULUS = 1024,
     parameter CIPHERTEXT_WIDTH = 32,
-    parameter DIMENSION = 10,
-    parameter BIG_N = 30,
+    parameter DIMENSION = 2,
+    parameter BIG_N = 3,
     parameter OPCODE_ADDR = 32'h30000000,
     parameter OUTPUT_ADDR = 32'h00000001,
     parameter DATA_WIDTH = 128,
     parameter ADDR_WIDTH = 9,
     parameter DEPTH = 256,
-    parameter DIM_WIDTH = 4,
+    parameter DIM_WIDTH = 8,
     parameter PARALLEL = 1,
     parameter USE_POWER_PINS = 0, 
     parameter ENABLE_FULL_IO = 0  
@@ -64,8 +63,8 @@ module user_proj_example
     wire clk;
     wire rst_n;
 
-    assign clk = wb_clk_i;
-    assign rst_n = la_oenb[1] ? la_data_in[1] : 1;
+    assign clk = la_oenb[0] ? wb_clk_i : la_data_in[64];
+    assign rst_n = la_oenb[1] ? 1 : 0;
 
     // WISHBONE DECLARATIONS
     wire [31:0] wishbone_output;
@@ -91,6 +90,7 @@ module user_proj_example
     wire [DIM_WIDTH:0] row;
     // SRAM DECLARATIONS
     wire in_wen;
+    reg delayed_in_wen;
     wire [ADDR_WIDTH - 1 : 0] in_wadr;
     wire [DATA_WIDTH - 1 : 0] in_wdata;
     reg out_wen;
@@ -171,7 +171,7 @@ module user_proj_example
         .ADDR_WIDTH(ADDR_WIDTH),
         .PARALLEL(PARALLEL)
     ) controller_inst (
-        .clk(wb_clk_i),
+        .clk(clk),
         .rst_n(rst_n),
         .opcode(opcode),
         .config_en(config_en && valid_opcode),
@@ -190,7 +190,13 @@ module user_proj_example
 
     // ----- SRAM -----
     // CONFIGURATION
-    assign in_wen = wb_write_req & !config_en;
+    
+    always @(posedge clk) begin
+	   delayed_in_wen = wb_write_req & !config_en;
+           delayed_out_ren <= wb_read_req;
+    end
+
+    assign in_wen = delayed_in_wen;
     assign in_wadr = wishbone_addr[ADDR_WIDTH:0];
     assign in_wdata = wishbone_data;
 
@@ -204,10 +210,7 @@ module user_proj_example
     assign op2_ren = en;
     assign op2_radr = op2_addr;
 
-    always @(posedge wb_clk_i) begin
-           delayed_out_ren <= wb_read_req;
-    end
-    assign out_ren = delayed_out_ren;
+    assign out_ren = wb_read_req;
     assign out_radr = wishbone_addr[ADDR_WIDTH:0];
 
     // SRAM
@@ -216,7 +219,7 @@ module user_proj_example
         .ADDR_WIDTH(ADDR_WIDTH),
         .DEPTH(DEPTH)
     ) sram_inst (
-        .clk(wb_clk_i),
+        .clk(clk),
         .in_wen(in_wen),
         .in_wadr(in_wadr),
         .in_wdata(in_wdata),
@@ -244,7 +247,7 @@ module user_proj_example
         end
     endgenerate
 
-    always @(posedge wb_clk_i) begin
+    always @(posedge clk) begin
         delayed_row <= row;
         out_wen <= en; // possible danger zone stupid thing
         out_wadr_delay_stage <= out_addr;
@@ -266,7 +269,7 @@ module user_proj_example
         .BIG_N(BIG_N),
         .PARALLEL(PARALLEL)
     ) encrypt_inst (
-        .clk(wb_clk_i),
+        .clk(clk),
         .rst_n(rst_n),
         .en(encrypt_en),
         .done(done),
@@ -290,7 +293,7 @@ module user_proj_example
         .BIG_N(BIG_N),
         .PARALLEL(PARALLEL)
     ) decrypt_inst (
-        .clk(wb_clk_i),
+        .clk(clk),
         .rst_n(rst_n),
         .en(en),
         .secretkey_entry(op1_structured),
@@ -320,7 +323,7 @@ module user_proj_example
         .BIG_N(BIG_N),
         .PARALLEL(PARALLEL)
     ) homomorphic_inst (
-        .clk(wb_clk_i),
+        .clk(clk),
         .rst_n(rst_n),
         .en(en),
         .ciphertext1(op1_structured),
@@ -351,7 +354,7 @@ module user_proj_example
         .BIG_N(BIG_N),
         .PARALLEL(PARALLEL)
     ) homomorphic_multiply_inst (
-        .clk(wb_clk_i),
+        .clk(clk),
         .rst_n(rst_n),
         .op1(muxed_ops),
         .row(delayed_row),
@@ -561,6 +564,9 @@ module wishbone_ctl #
   reg [31:0] wbs_reg_i;
   reg [31:0] wbs_reg_o;
 
+  reg delayed_read_req;
+  reg dd_read_req;
+
   reg [31:0] wbs_reg_addr;
 
 // ==============================================================================
@@ -589,10 +595,12 @@ module wishbone_ctl #
 	    wbs_reg_i <= wbs_dat_i;
     end
     // Sram to Output Data
-    always@(negedge wb_clk_i) begin
+    always@(posedge wb_clk_i) begin
+	dd_read_req = delayed_read_req;
+	delayed_read_req = wbs_req_read;
         if (wb_rst_i)
             wbs_reg_o <= 32'd0;
-        else if (wbs_req_read)
+        else if (dd_read_req)
             wbs_reg_o <= wishbone_output;
     end
 // ==============================================================================
@@ -601,10 +609,10 @@ module wishbone_ctl #
 assign config_en               = wbs_req & (wbs_adr_i == OPCODE_ADDR);
 
 assign wbs_ack_o               = ack_o;
-assign wbs_dat_o               = wbs_req_read ? wishbone_output : 32'd0;
+assign wbs_dat_o               = wbs_reg_o;
 
-assign wishbone_data           = wbs_reg_i;
-assign wishbone_addr           = (wbs_reg_addr - 32'h30000004) >> 2;
+assign wishbone_data           = wbs_dat_i;
+assign wishbone_addr           = (wbs_adr_i - 32'h30000004) >> 2;
 
 assign wb_read_req             = wbs_req_read;
 assign wb_write_req            = wbs_req_write;
@@ -755,6 +763,7 @@ module controller
             op2_base_addr_stored <= op2_base_addr;
             out_base_addr_stored <= out_base_addr;
             en_reg <= 0;
+	    op_select_reg <= 0;
             done_reg <= 0;
             row_reg <= 0;
             col <= 0;
@@ -780,6 +789,7 @@ module controller
     assign op1_addr = op1_addr_reg;
     assign op2_addr = op2_addr_reg;
     assign out_addr = out_addr_reg;
+    assign op_select = op_select_reg;
     assign en = en_reg;
     assign done = done_reg;
     assign row = row_reg;
@@ -832,7 +842,7 @@ module encrypt
 
     // main logic
     always @(posedge clk) begin
-        if (en && rst_n) begin
+        if (en & rst_n != 0) begin
             psum[row] <= psum[row] + parallel1[PARALLEL-1] + parallel2[PARALLEL-1];
         end else begin
             last_row <= 0;
@@ -1064,119 +1074,4 @@ module homomorphic_multiply
         end
     endgenerate
     */
-endmodule
-
-// OpenRAM SRAM model
-// Words: 256
-// Word size: 32
-// Write size: 8
-
-module sky130_sram_1kbyte_1rw1r_32x256_8(
-`ifdef USE_POWER_PINS
-    vccd1,
-    vssd1,
-`endif
-// Port 0: RW
-    clk0,csb0,web0,wmask0,addr0,din0,dout0,
-// Port 1: R
-    clk1,csb1,addr1,dout1
-  );
-
-  parameter NUM_WMASKS = 4 ;
-  parameter DATA_WIDTH = 32 ;
-  parameter ADDR_WIDTH = 8 ;
-  parameter RAM_DEPTH = 1 << ADDR_WIDTH;
-  // FIXME: This delay is arbitrary.
-  parameter DELAY = 3 ;
-  parameter VERBOSE = 1 ; //Set to 0 to only display warnings
-  parameter T_HOLD = 1 ; //Delay to hold dout value after posedge. Value is arbitrary
-
-`ifdef USE_POWER_PINS
-    inout vccd1;
-    inout vssd1;
-`endif
-  input  clk0; // clock
-  input   csb0; // active low chip select
-  input  web0; // active low write control
-  input [NUM_WMASKS-1:0]   wmask0; // write mask
-  input [ADDR_WIDTH-1:0]  addr0;
-  input [DATA_WIDTH-1:0]  din0;
-  output [DATA_WIDTH-1:0] dout0;
-  input  clk1; // clock
-  input   csb1; // active low chip select
-  input [ADDR_WIDTH-1:0]  addr1;
-  output [DATA_WIDTH-1:0] dout1;
-
-  reg [DATA_WIDTH-1:0]    mem [0:RAM_DEPTH-1];
-
-  reg  csb0_reg;
-  reg  web0_reg;
-  reg [NUM_WMASKS-1:0]   wmask0_reg;
-  reg [ADDR_WIDTH-1:0]  addr0_reg;
-  reg [DATA_WIDTH-1:0]  din0_reg;
-  reg [DATA_WIDTH-1:0]  dout0;
-
-  // All inputs are registers
-  always @(posedge clk0)
-  begin
-    csb0_reg = csb0;
-    web0_reg = web0;
-    wmask0_reg = wmask0;
-    addr0_reg = addr0;
-    din0_reg = din0;
-    #(T_HOLD) dout0 = 32'bx;
-    if ( !csb0_reg && web0_reg && VERBOSE )
-      $display($time," Reading %m addr0=%d dout0=%d",addr0_reg,mem[addr0_reg]);
-    if ( !csb0_reg && !web0_reg && VERBOSE )
-      $display($time," Writing %m addr0=%d din0=%d wmask0=%b",addr0_reg,din0_reg,wmask0_reg);
-  end
-
-  reg  csb1_reg;
-  reg [ADDR_WIDTH-1:0]  addr1_reg;
-  reg [DATA_WIDTH-1:0]  dout1;
-
-  // All inputs are registers
-  always @(posedge clk1)
-  begin
-    csb1_reg = csb1;
-    addr1_reg = addr1;
-    if (!csb0 && !web0 && !csb1 && (addr0 == addr1))
-         $display($time," WARNING: Writing and reading addr0=%d and addr1=%d simultaneously!",addr0,addr1);
-    #(T_HOLD) dout1 = 32'bx;
-    if ( !csb1_reg && VERBOSE )
-      $display($time," Reading %m addr1=%d dout1=%d",addr1_reg,mem[addr1_reg]);
-  end
-
-  // Memory Write Block Port 0
-  // Write Operation : When web0 = 0, csb0 = 0
-  always @ (negedge clk0)
-  begin : MEM_WRITE0
-    if ( !csb0_reg && !web0_reg ) begin
-        if (wmask0_reg[0])
-                mem[addr0_reg][7:0] = din0_reg[7:0];
-        if (wmask0_reg[1])
-                mem[addr0_reg][15:8] = din0_reg[15:8];
-        if (wmask0_reg[2])
-                mem[addr0_reg][23:16] = din0_reg[23:16];
-        if (wmask0_reg[3])
-                mem[addr0_reg][31:24] = din0_reg[31:24];
-    end
-  end
-
-  // Memory Read Block Port 0
-  // Read Operation : When web0 = 1, csb0 = 0
-  always @ (negedge clk0)
-  begin : MEM_READ0
-    if (!csb0_reg && web0_reg)
-       dout0 <= #(DELAY) mem[addr0_reg];
-  end
-
-  // Memory Read Block Port 1
-  // Read Operation : When web1 = 1, csb1 = 0
-  always @ (negedge clk1)
-  begin : MEM_READ1
-    if (!csb1_reg)
-       dout1 <= #(DELAY) mem[addr1_reg];
-  end
-
 endmodule
