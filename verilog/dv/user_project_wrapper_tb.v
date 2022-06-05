@@ -60,7 +60,7 @@ module user_project_wrapper_tb;
     .ADDR_WIDTH(`ADDR_WIDTH),
     .DEPTH(`DEPTH),
     .DIM_WIDTH(`DIM_WIDTH)
-  ) top_inst (
+  ) user_project_wrapper_inst (
     .la_data_in(la_data_in),
     .la_data_out(la_data_out),
     .la_oenb(la_oenb),
