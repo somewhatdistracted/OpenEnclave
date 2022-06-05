@@ -103,7 +103,7 @@ module user_project_wrapper_tb;
     la_oenb[1] = 1;
 
     // ----- LOAD TWO CIPHERTEXTS (3-VECTORS) PLUS SOME REDUNDANT VALUES -----
-    #50
+    #40
     // Load in [10 15 20] and [20 25 30]
     wbs_stb_i = 1;
     wbs_cyc_i = 1;
@@ -114,47 +114,137 @@ module user_project_wrapper_tb;
     wbs_adr_i = 32'h30000004;
     wbs_dat_i = 32'd10;
 
-    #60
+    #40
+    wbs_stb_i = 0;
+    wbs_cyc_i = 0;
+    wbs_we_i = 0;
+    #40
+    wbs_stb_i = 1;
+    wbs_cyc_i = 1;
+    wbs_we_i = 1;
+
     wbs_adr_i = 32'h30000194;
     wbs_dat_i = 32'd20;
 
     #40
+    wbs_stb_i = 0;
+    wbs_cyc_i = 0;
+    wbs_we_i = 0;
+    #40
+
+    wbs_stb_i = 1;
+    wbs_cyc_i = 1;
+    wbs_we_i = 1;
+
     wbs_adr_i = 32'h30000008;
     wbs_dat_i = 32'd11;
 
     #40
+    wbs_stb_i = 0;
+    wbs_cyc_i = 0;
+    wbs_we_i = 0;
+    #40
+    wbs_stb_i = 1;
+    wbs_cyc_i = 1;
+    wbs_we_i = 1;
+
     wbs_adr_i = 32'h30000198;
     wbs_dat_i = 32'd21;
 
     #40
+    wbs_stb_i = 0;
+    wbs_cyc_i = 0;
+    wbs_we_i = 0;
+    #40
+    wbs_stb_i = 1;
+    wbs_cyc_i = 1;
+    wbs_we_i = 1;
+
+
     wbs_adr_i = 32'h3000000c;
     wbs_dat_i = 32'd12;
 
     #40
+    wbs_stb_i = 0;
+    wbs_cyc_i = 0;
+    wbs_we_i = 0;
+    #40
+    wbs_stb_i = 1;
+    wbs_cyc_i = 1;
+    wbs_we_i = 1;
+
     wbs_adr_i = 32'h3000019c;
     wbs_dat_i = 32'd22;
 
     #40
+    wbs_stb_i = 0;
+    wbs_cyc_i = 0;
+    wbs_we_i = 0;
+    #40
+    wbs_stb_i = 1;
+    wbs_cyc_i = 1;
+    wbs_we_i = 1;
+
     wbs_adr_i = 32'h30000010;
     wbs_dat_i = 32'd13;
 
     #40
+    wbs_stb_i = 0;
+    wbs_cyc_i = 0;
+    wbs_we_i = 0;
+    #40
+    wbs_stb_i = 1;
+    wbs_cyc_i = 1;
+    wbs_we_i = 1;
+
     wbs_adr_i = 32'h300001a0;
     wbs_dat_i = 32'd23;
 
     #40
+    wbs_stb_i = 0;
+    wbs_cyc_i = 0;
+    wbs_we_i = 0;
+    #40
+    wbs_stb_i = 1;
+    wbs_cyc_i = 1;
+    wbs_we_i = 1;
+
     wbs_adr_i = 32'h30000014;
     wbs_dat_i = 32'd14;
 
     #40
+    wbs_stb_i = 0;
+    wbs_cyc_i = 0;
+    wbs_we_i = 0;
+    #40
+    wbs_stb_i = 1;
+    wbs_cyc_i = 1;
+    wbs_we_i = 1;
+
     wbs_adr_i = 32'h300001a4;
     wbs_dat_i = 32'd24;
 
     #40
+    wbs_stb_i = 0;
+    wbs_cyc_i = 0;
+    wbs_we_i = 0;
+    #40
+    wbs_stb_i = 1;
+    wbs_cyc_i = 1;
+    wbs_we_i = 1;
+
     wbs_adr_i = 32'h30000018;
     wbs_dat_i = 32'd15;
 
     #40
+    wbs_stb_i = 0;
+    wbs_cyc_i = 0;
+    wbs_we_i = 0;
+    #40
+    wbs_stb_i = 1;
+    wbs_cyc_i = 1;
+    wbs_we_i = 1;
+
     wbs_adr_i = 32'h300001a8;
     wbs_dat_i = 32'd25;
 
@@ -162,6 +252,14 @@ module user_project_wrapper_tb;
     $display("\n\n\n ----- TEST 1 ----- \n\n\n");
     // Send Instruction
     #40
+    wbs_stb_i = 0;
+    wbs_cyc_i = 0;
+    wbs_we_i = 0;
+    #40
+    wbs_stb_i = 1;
+    wbs_cyc_i = 1;
+    wbs_we_i = 1;
+
     wbs_adr_i = `OPCODE_ADDR;
 
     wbs_dat_i = 0;
@@ -171,7 +269,7 @@ module user_project_wrapper_tb;
     wbs_dat_i[(2+(3*`ADDR_WIDTH))-1:(2+(2*`ADDR_WIDTH))] = 50;
     wbs_dat_i[31] = 1'b1;
 
-    #100
+    #40
     wbs_we_i = 0;
     wbs_stb_i = 0;
     wbs_cyc_i = 0;
@@ -227,7 +325,6 @@ module user_project_wrapper_tb;
     $display("Wishbone Out = %d", wbs_dat_o);
     assert(wbs_dat_o == 34); if (wbs_dat_o != 34) tests_successful[0] = 0;
 
-    /*
     // ----- TEST 2: DECRYPT -----
     $display("\n\n\n ----- TEST 2 ----- \n\n\n");
     // Send Instruction
@@ -247,7 +344,7 @@ module user_project_wrapper_tb;
     wbs_dat_i[(2+(3*`ADDR_WIDTH))-1:(2+(2*`ADDR_WIDTH))] = 30;
     wbs_dat_i[31] = 1'b1;
 
-    #100
+    #40
     wbs_we_i = 0;
     wbs_stb_i = 0;
     wbs_cyc_i = 0;
@@ -287,7 +384,7 @@ module user_project_wrapper_tb;
     wbs_dat_i[(2+(3*`ADDR_WIDTH))-1:(2+(2*`ADDR_WIDTH))] = 40;
     wbs_dat_i[31] = 1'b1;
 
-    #100
+    #40
     wbs_we_i = 0;
     wbs_stb_i = 0;
     wbs_cyc_i = 0;
@@ -371,7 +468,7 @@ module user_project_wrapper_tb;
     wbs_dat_i[(2+(3*`ADDR_WIDTH))-1:(2+(2*`ADDR_WIDTH))] = 70;
     wbs_dat_i[31] = 1'b1;
 
-    #100
+    #40
     wbs_we_i = 0;
     wbs_stb_i = 0;
     wbs_cyc_i = 0;
@@ -429,7 +526,7 @@ module user_project_wrapper_tb;
     if (tests_successful[3]) begin
         $display("Encrypt Test Passed");
     end
-    */
+    
 
     $display("\n\n\nTest done!\n\n\n");
     $finish;
