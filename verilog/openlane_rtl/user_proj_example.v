@@ -64,7 +64,7 @@ module user_proj_example
     wire rst_n;
 
     assign clk = wb_clk_i;
-    assign rst_n = la_oenb[1] ? la_data_in[1] : 0;
+    assign rst_n = (~la_oenb[1]) ? la_data_in[1] : 0;
 
     // WISHBONE DECLARATIONS
     wire [31:0] wishbone_output;
