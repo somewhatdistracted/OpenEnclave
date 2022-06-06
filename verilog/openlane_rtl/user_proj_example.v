@@ -989,31 +989,32 @@ module homomorphic_multiply
     
     assign out_row = (row == 0)? 0 : row - 1;
 
-    always @(posedge clk) begin
+    always_ff @(posedge clk) begin
         if (!rst_n) begin
             ciphertext1 <= 0;
             interim_result <= 0;
         end else if (ciphertext_select == 0 && en) begin
             if (row <= DIMENSION) begin
-                //for (int jm = 0; jm < PARALLEL; jm=jm+1) begin
-		    //ciphertext1[row+jm] <= op1[jm];
-		    ciphertext1[row] <= op1[0];
-                //end
+                for (int jm = 0; jm < PARALLEL; jm=jm+1) begin
+		            ciphertext1[row+jm] <= op1[jm];
+		    //ciphertext1[row] <= op1[0];
+                end
             end else begin
-                //for (int km = 0; km < PARALLEL; km=km+1) begin
-		    //ciphertext1[row+km-DIMENSION] <= op1[km];
-		    ciphertext1[row-DIMENSION] <= op1[0];
-                //end
+                for (int km = 0; km < PARALLEL; km=km+1) begin
+		            ciphertext1[row+km-DIMENSION] <= op1[km];
+		    //ciphertext1[row-DIMENSION] <= op1[0];
+                end
             end
-        end //else if (ciphertext_select == 1 && en) begin
-            //for (int xm = 0; xm < PARALLEL; xm=xm+1) begin
-            //    for (int ym = 0; ym <= DIMENSION; ym=ym+1) begin
-            //        interim_result[row + xm + ym] <= interim_result[row + xm + ym] + op1[xm] * ciphertext1[ym];
-            //    end
-            //end
-        //end
+        end else if (ciphertext_select == 1 && en) begin
+            for (int xm = 0; xm < PARALLEL; xm=xm+1) begin
+                for (int ym = 0; ym <= DIMENSION; ym=ym+1) begin
+                    interim_result[row + xm + ym] <= interim_result[row + xm + ym] + op1[xm] * ciphertext1[ym];
+                end
+            end
+        end
     end
 
+    /*
     generate
         genvar ym;
         for (ym = 0; ym <= DIMENSION; ym=ym+1) begin
@@ -1024,6 +1025,7 @@ module homomorphic_multiply
 	    end
         end
     endgenerate
+    */
 
     generate
         genvar mmm;

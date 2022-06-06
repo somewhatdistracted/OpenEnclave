@@ -56,7 +56,7 @@ module user_proj_example_tb;
     .ADDR_WIDTH(`ADDR_WIDTH),
     .DEPTH(`DEPTH),
     .DIM_WIDTH(`DIM_WIDTH)
-  ) top_inst (
+  ) user_proj_example_inst (
     .la_data_in(la_data_in),
     .la_data_out(la_data_out),
     .la_oenb(la_oenb),
