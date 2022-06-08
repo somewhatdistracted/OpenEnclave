@@ -3,6 +3,7 @@
 `define OPCODE_DECRYPT  2'b01
 `define OPCODE_ADD      2'b10
 `define OPCODE_MULT     2'b11
+`define USE_POWER_PINS 1
 
 //`default_nettype none
 `define MPRJ_IO_PADS 38
@@ -26,10 +27,10 @@ module user_proj_example
     parameter ENABLE_FULL_IO = 0  
 )
 (
-  //`ifdef USE_POWER_PINS
-  //  inout vccd1,
-  //  inout vssd1,
-  //`endif
+  `ifdef USE_POWER_PINS
+    inout vccd1,
+    inout vssd1,
+  `endif
 
     // Logic Analyzer
     // [0] -> gpio (1) / wishbone (0) select
