@@ -13,15 +13,15 @@ module user_proj_example
     parameter PLAINTEXT_WIDTH = 16,
     parameter CIPHERTEXT_MODULUS = 1024,
     parameter CIPHERTEXT_WIDTH = 32,
-    parameter DIMENSION = 16,
-    parameter BIG_N = 32,
+    parameter DIMENSION = 2,
+    parameter BIG_N = 3,
     parameter OPCODE_ADDR = 32'h30000000,
     parameter OUTPUT_ADDR = 32'h00000001,
     parameter DATA_WIDTH = 128,
     parameter ADDR_WIDTH = 9,
     parameter DEPTH = 256,
     parameter DIM_WIDTH = 8,
-    parameter PARALLEL = 1,
+    parameter PARALLEL = 1, // revert if needed
     parameter USE_POWER_PINS = 0, 
     parameter ENABLE_FULL_IO = 0  
 )
@@ -44,7 +44,9 @@ module user_proj_example
     output wire [`MPRJ_IO_PADS-1:0] io_oeb,
 
     // User maskable interrupt signals
-    output wire [2:0] irq,
+    output wire [2:0] user_irq,
+    input user_clock2,
+    inout [`MPRJ_IO_PADS-10:0] analog_io,
 
     //Wishbone
     input wire       wb_clk_i,
@@ -64,7 +66,7 @@ module user_proj_example
     wire rst_n;
 
     // defaults
-    assign irq = 3'b0;
+    assign user_irq = 3'b0;
     assign la_data_out = 128'b0;
     assign io_out = 0;
     assign io_oeb = 0;
@@ -938,12 +940,12 @@ module homomorphic_add
 );
     reg [PARALLEL-1:0][CIPHERTEXT_WIDTH-1:0] ir;
 
-    always @(posedge clk) begin
+    always_ff @(posedge clk) begin
         if (en) begin
-            //for (int aaa = 0; aaa < PARALLEL; aaa=aaa+1) begin
-	        //ir[aaa] <= ciphertext1[aaa] + ciphertext2[aaa];
-		ir[0] <= ciphertext1[0] + ciphertext2[0];
-            //end
+            for (int aaa = 0; aaa < PARALLEL; aaa=aaa+1) begin
+	            ir[aaa] <= ciphertext1[aaa] + ciphertext2[aaa];
+		    //ir[0] <= ciphertext1[0] + ciphertext2[0];
+            end
         end else begin
             ir <= 0;
         end
