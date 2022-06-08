@@ -14,7 +14,7 @@
 //`default_nettype none
 `define MPRJ_IO_PADS 38
 
-module user_proj_example_tb;
+module top_tb;
 
   reg [127:0] la_data_in;
   wire [127:0] la_data_out;
@@ -24,7 +24,11 @@ module user_proj_example_tb;
   wire [`MPRJ_IO_PADS-1:0] io_out;
   wire [`MPRJ_IO_PADS-1:0] io_oeb;
 
-  wire [2:0] irq;
+  wire [`MPRJ_IO_PADS-10:0] analog_io;
+ 
+  reg user_clock2;
+
+  wire [2:0] user_irq;
 
   reg wb_clk_i;
   reg wb_rst_i;
@@ -43,7 +47,7 @@ module user_proj_example_tb;
 
   always #(10) wb_clk_i = ~wb_clk_i;
 
-  user_proj_example #(
+  top #(
     .PLAINTEXT_MODULUS(`PLAINTEXT_MODULUS),
     .PLAINTEXT_WIDTH(`PLAINTEXT_WIDTH),
     .CIPHERTEXT_MODULUS(`CIPHERTEXT_MODULUS),
@@ -56,14 +60,16 @@ module user_proj_example_tb;
     .ADDR_WIDTH(`ADDR_WIDTH),
     .DEPTH(`DEPTH),
     .DIM_WIDTH(`DIM_WIDTH)
-  ) user_proj_example_inst (
+  ) top_inst (
     .la_data_in(la_data_in),
     .la_data_out(la_data_out),
     .la_oenb(la_oenb),
     .io_in(io_in),
     .io_out(io_out),
     .io_oeb(io_oeb),
-    .irq(irq),
+    .analog_io(analog_io),
+    .user_clock2(user_clock2),
+    .user_irq(user_irq),
     .wb_clk_i(wb_clk_i),
     .wb_rst_i(wb_rst_i),
     .wbs_stb_i(wbs_stb_i),
@@ -80,7 +86,7 @@ module user_proj_example_tb;
     tests_successful = 4'b1111;
     // initialize and reset
     la_data_in = 0;
-    la_data_in[1] = 1;
+    la_oenb = 0;
     la_oenb[1] = 1;
 
     wb_clk_i = 0;
@@ -92,12 +98,12 @@ module user_proj_example_tb;
     wbs_dat_i = 0;
     wbs_adr_i = 0;
 
-    #60
+    #20
     // clear reset
     la_oenb[1] = 0;
 
     // ----- LOAD TWO CIPHERTEXTS (3-VECTORS) PLUS SOME REDUNDANT VALUES -----
-    #40
+    #50
     // Load in [10 15 20] and [20 25 30]
     wbs_stb_i = 1;
     wbs_cyc_i = 1;
@@ -108,137 +114,47 @@ module user_proj_example_tb;
     wbs_adr_i = 32'h30000004;
     wbs_dat_i = 32'd10;
 
-    #40
-    wbs_stb_i = 0;
-    wbs_cyc_i = 0;
-    wbs_we_i = 0;
-    #40
-    wbs_stb_i = 1;
-    wbs_cyc_i = 1;
-    wbs_we_i = 1;
-
+    #60
     wbs_adr_i = 32'h30000194;
     wbs_dat_i = 32'd20;
 
     #40
-    wbs_stb_i = 0;
-    wbs_cyc_i = 0;
-    wbs_we_i = 0;
-    #40
-
-    wbs_stb_i = 1;
-    wbs_cyc_i = 1;
-    wbs_we_i = 1;
-
     wbs_adr_i = 32'h30000008;
     wbs_dat_i = 32'd11;
 
     #40
-    wbs_stb_i = 0;
-    wbs_cyc_i = 0;
-    wbs_we_i = 0;
-    #40
-    wbs_stb_i = 1;
-    wbs_cyc_i = 1;
-    wbs_we_i = 1;
-
     wbs_adr_i = 32'h30000198;
     wbs_dat_i = 32'd21;
 
     #40
-    wbs_stb_i = 0;
-    wbs_cyc_i = 0;
-    wbs_we_i = 0;
-    #40
-    wbs_stb_i = 1;
-    wbs_cyc_i = 1;
-    wbs_we_i = 1;
-
-
     wbs_adr_i = 32'h3000000c;
     wbs_dat_i = 32'd12;
 
     #40
-    wbs_stb_i = 0;
-    wbs_cyc_i = 0;
-    wbs_we_i = 0;
-    #40
-    wbs_stb_i = 1;
-    wbs_cyc_i = 1;
-    wbs_we_i = 1;
-
     wbs_adr_i = 32'h3000019c;
     wbs_dat_i = 32'd22;
 
     #40
-    wbs_stb_i = 0;
-    wbs_cyc_i = 0;
-    wbs_we_i = 0;
-    #40
-    wbs_stb_i = 1;
-    wbs_cyc_i = 1;
-    wbs_we_i = 1;
-
     wbs_adr_i = 32'h30000010;
     wbs_dat_i = 32'd13;
 
     #40
-    wbs_stb_i = 0;
-    wbs_cyc_i = 0;
-    wbs_we_i = 0;
-    #40
-    wbs_stb_i = 1;
-    wbs_cyc_i = 1;
-    wbs_we_i = 1;
-
     wbs_adr_i = 32'h300001a0;
     wbs_dat_i = 32'd23;
 
     #40
-    wbs_stb_i = 0;
-    wbs_cyc_i = 0;
-    wbs_we_i = 0;
-    #40
-    wbs_stb_i = 1;
-    wbs_cyc_i = 1;
-    wbs_we_i = 1;
-
     wbs_adr_i = 32'h30000014;
     wbs_dat_i = 32'd14;
 
     #40
-    wbs_stb_i = 0;
-    wbs_cyc_i = 0;
-    wbs_we_i = 0;
-    #40
-    wbs_stb_i = 1;
-    wbs_cyc_i = 1;
-    wbs_we_i = 1;
-
     wbs_adr_i = 32'h300001a4;
     wbs_dat_i = 32'd24;
 
     #40
-    wbs_stb_i = 0;
-    wbs_cyc_i = 0;
-    wbs_we_i = 0;
-    #40
-    wbs_stb_i = 1;
-    wbs_cyc_i = 1;
-    wbs_we_i = 1;
-
     wbs_adr_i = 32'h30000018;
     wbs_dat_i = 32'd15;
 
     #40
-    wbs_stb_i = 0;
-    wbs_cyc_i = 0;
-    wbs_we_i = 0;
-    #40
-    wbs_stb_i = 1;
-    wbs_cyc_i = 1;
-    wbs_we_i = 1;
-
     wbs_adr_i = 32'h300001a8;
     wbs_dat_i = 32'd25;
 
@@ -246,14 +162,6 @@ module user_proj_example_tb;
     $display("\n\n\n ----- TEST 1 ----- \n\n\n");
     // Send Instruction
     #40
-    wbs_stb_i = 0;
-    wbs_cyc_i = 0;
-    wbs_we_i = 0;
-    #40
-    wbs_stb_i = 1;
-    wbs_cyc_i = 1;
-    wbs_we_i = 1;
-
     wbs_adr_i = `OPCODE_ADDR;
 
     wbs_dat_i = 0;
@@ -263,7 +171,7 @@ module user_proj_example_tb;
     wbs_dat_i[(2+(3*`ADDR_WIDTH))-1:(2+(2*`ADDR_WIDTH))] = 50;
     wbs_dat_i[31] = 1'b1;
 
-    #40
+    #100
     wbs_we_i = 0;
     wbs_stb_i = 0;
     wbs_cyc_i = 0;
@@ -338,7 +246,7 @@ module user_proj_example_tb;
     wbs_dat_i[(2+(3*`ADDR_WIDTH))-1:(2+(2*`ADDR_WIDTH))] = 30;
     wbs_dat_i[31] = 1'b1;
 
-    #40
+    #100
     wbs_we_i = 0;
     wbs_stb_i = 0;
     wbs_cyc_i = 0;
@@ -378,7 +286,7 @@ module user_proj_example_tb;
     wbs_dat_i[(2+(3*`ADDR_WIDTH))-1:(2+(2*`ADDR_WIDTH))] = 40;
     wbs_dat_i[31] = 1'b1;
 
-    #40
+    #100
     wbs_we_i = 0;
     wbs_stb_i = 0;
     wbs_cyc_i = 0;
@@ -462,7 +370,7 @@ module user_proj_example_tb;
     wbs_dat_i[(2+(3*`ADDR_WIDTH))-1:(2+(2*`ADDR_WIDTH))] = 70;
     wbs_dat_i[31] = 1'b1;
 
-    #40
+    #100
     wbs_we_i = 0;
     wbs_stb_i = 0;
     wbs_cyc_i = 0;
@@ -520,7 +428,6 @@ module user_proj_example_tb;
     if (tests_successful[3]) begin
         $display("Encrypt Test Passed");
     end
-    
 
     $display("\n\n\nTest done!\n\n\n");
     $finish;
@@ -529,7 +436,7 @@ module user_proj_example_tb;
 
   initial begin    
     $dumpfile("dump.vcd");
-    $dumpvars(0, user_proj_example_tb);
+    $dumpvars(0, top_tb);
   end
 
 endmodule  

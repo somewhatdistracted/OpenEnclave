@@ -14,7 +14,7 @@
 //`default_nettype none
 `define MPRJ_IO_PADS 38
 
-module user_proj_example_tb;
+module user_project_wrapper_tb;
 
   reg [127:0] la_data_in;
   wire [127:0] la_data_out;
@@ -24,7 +24,11 @@ module user_proj_example_tb;
   wire [`MPRJ_IO_PADS-1:0] io_out;
   wire [`MPRJ_IO_PADS-1:0] io_oeb;
 
-  wire [2:0] irq;
+  wire [`MPRJ_IO_PADS-10:0] analog_io;
+ 
+  reg user_clock2;
+
+  wire [2:0] user_irq;
 
   reg wb_clk_i;
   reg wb_rst_i;
@@ -43,7 +47,7 @@ module user_proj_example_tb;
 
   always #(10) wb_clk_i = ~wb_clk_i;
 
-  user_proj_example #(
+  user_project_wrapper #(
     .PLAINTEXT_MODULUS(`PLAINTEXT_MODULUS),
     .PLAINTEXT_WIDTH(`PLAINTEXT_WIDTH),
     .CIPHERTEXT_MODULUS(`CIPHERTEXT_MODULUS),
@@ -56,14 +60,16 @@ module user_proj_example_tb;
     .ADDR_WIDTH(`ADDR_WIDTH),
     .DEPTH(`DEPTH),
     .DIM_WIDTH(`DIM_WIDTH)
-  ) user_proj_example_inst (
+  ) user_project_wrapper_inst (
     .la_data_in(la_data_in),
     .la_data_out(la_data_out),
     .la_oenb(la_oenb),
     .io_in(io_in),
     .io_out(io_out),
     .io_oeb(io_oeb),
-    .irq(irq),
+    .analog_io(analog_io),
+    .user_clock2(user_clock2),
+    .user_irq(user_irq),
     .wb_clk_i(wb_clk_i),
     .wb_rst_i(wb_rst_i),
     .wbs_stb_i(wbs_stb_i),
@@ -92,7 +98,7 @@ module user_proj_example_tb;
     wbs_dat_i = 0;
     wbs_adr_i = 0;
 
-    #60
+    #20
     // clear reset
     la_oenb[1] = 0;
 
@@ -529,7 +535,7 @@ module user_proj_example_tb;
 
   initial begin    
     $dumpfile("dump.vcd");
-    $dumpvars(0, user_proj_example_tb);
+    $dumpvars(0, user_project_wrapper_tb);
   end
 
 endmodule  
