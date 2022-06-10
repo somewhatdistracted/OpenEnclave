@@ -18,9 +18,9 @@ module user_proj_example
     parameter BIG_N = 3,
     parameter OPCODE_ADDR = 32'h30000000,
     parameter OUTPUT_ADDR = 32'h00000001,
-    parameter DATA_WIDTH = 128,
+    parameter DATA_WIDTH = 64,
     parameter ADDR_WIDTH = 9,
-    parameter DEPTH = 256,
+    parameter DEPTH = 512,
     parameter DIM_WIDTH = 8,
     parameter PARALLEL = 1, // revert if needed
     parameter USE_POWER_PINS = 0, 
