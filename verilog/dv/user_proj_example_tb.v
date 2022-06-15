@@ -10,6 +10,7 @@
 `define ADDR_WIDTH         9
 `define DEPTH              256
 `define DIM_WIDTH          8
+`define USE_POWER_PINS     1
 
 //`default_nettype none
 `define MPRJ_IO_PADS 38
@@ -41,6 +42,9 @@ module user_proj_example_tb;
 
   reg [3:0] tests_successful;
 
+  supply0 vssd1;
+  supply1 vccd1;
+
   always #(10) wb_clk_i = ~wb_clk_i;
 
   user_proj_example #(
@@ -57,13 +61,17 @@ module user_proj_example_tb;
     .DEPTH(`DEPTH),
     .DIM_WIDTH(`DIM_WIDTH)
   ) user_proj_example_inst (
+    `ifdef USE_POWER_PINS
+    .vssd1(vssd1),
+    .vccd1(vccd1),
+    `endif
     .la_data_in(la_data_in),
     .la_data_out(la_data_out),
     .la_oenb(la_oenb),
     .io_in(io_in),
     .io_out(io_out),
     .io_oeb(io_oeb),
-    .irq(irq),
+    .user_irq(irq),
     .wb_clk_i(wb_clk_i),
     .wb_rst_i(wb_rst_i),
     .wbs_stb_i(wbs_stb_i),

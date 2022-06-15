@@ -1,8 +1,9 @@
-# setenv PDKPATH /farmshare/classes/ee/272/PDKs/share/pdk/sky130A
+setenv PDKPATH /farmshare/home/classes/ee/372/PDKs/share/pdk/sky130A
 
 setenv PATH /cad/mentor/2019.11/Catapult_Synthesis_10.4b-841621/Mgc_home/bin:$PATH
 setenv PATH /cad/iverilog/bin:$PATH
 setenv MGLS_LICENSE_FILE 1717@cadlic0.stanford.edu
+setenv SRAM_PATH /farmshare/home/classes/ee/372/PDKs/sky130_sram_macros/
 
 module load base
 module load vcs
