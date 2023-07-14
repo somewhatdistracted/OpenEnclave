@@ -9,7 +9,9 @@ Design Review
 
 Final Presentation
 
-## Fill Me
+## Bringup!
+
+![A photo of our chip post-tapeout!](https://github.com/somewhatdistracted/OpenEnclave/blob/main/bringup.png?raw=true)
 
 ## About Us
 
